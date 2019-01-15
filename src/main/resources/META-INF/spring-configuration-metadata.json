@@ -1,6 +1,11 @@
 {
   "properties": [
     {
+      "name": "http.server.host",
+      "type": "java.lang.String",
+      "description": "Description for http.server.host."
+    },
+    {
       "name": "html.content.location",
       "type": "java.lang.String",
       "description": "Description for html.content.location."

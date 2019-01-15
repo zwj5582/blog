@@ -40,12 +40,13 @@
             <img style="vertical-align:middle;" class="circular" src="favicon.ico">
             <span style="vertical-align:middle;">NullPointer</span>
         </a>
-        <nav class="site-header-nav" role="navigation">
+        <nav class="site-header-nav" role="navigation"
+             th:if="${session.SPRING_SECURITY_CONTEXT != null && session.SPRING_SECURITY_CONTEXT.authentication.principal.username != null}">
             <a href="/admin"
                class=" site-header-nav-item hvr-underline-from-center"
                target=""
-               th:title="${session.username}"
-               th:text="${session.username}"
+               th:title="${session.SPRING_SECURITY_CONTEXT.authentication.principal.username}"
+               th:text="${session.SPRING_SECURITY_CONTEXT.authentication.principal.username}"
             >
             </a>
         </nav>

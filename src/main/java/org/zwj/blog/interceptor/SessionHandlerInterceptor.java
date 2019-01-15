@@ -13,6 +13,7 @@ import org.zwj.blog.utils.Util;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+@Deprecated
 public class SessionHandlerInterceptor implements HandlerInterceptor {
 
     @Override
