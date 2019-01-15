@@ -34,6 +34,8 @@ public class PageContent implements Serializable {
 
     private String htmlLocation;
 
+    private String filename;
+
     @Temporal(TemporalType.TIMESTAMP)
     private Date createTime;
 
@@ -49,10 +51,6 @@ public class PageContent implements Serializable {
                             .toDate());
         else
             pageContent.setCreateTime(new Date());
-        if (Util.valid(pageContent.getFile()) && !Util.valid(pageContent.getHtmlLocation())) {
-            String filename = pageContent.getFile().getOriginalFilename();
-            pageContent.setHtmlLocation(filename);
-        }
         return pageContent;
     }
 }

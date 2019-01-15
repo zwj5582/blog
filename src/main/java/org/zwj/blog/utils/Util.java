@@ -1,6 +1,8 @@
 package org.zwj.blog.utils;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Util {
 
@@ -92,6 +94,25 @@ public class Util {
             return true;
         }
         return false;
+    }
+
+    public static <T> T getFirst(Collection<T> collection) {
+        if (collection != null && !collection.isEmpty()) {
+            return collection.stream().findFirst().get();
+        } else {
+            return null;
+        }
+    }
+
+    public static String randomUUIDToString() {
+        return UUID.randomUUID().toString().replaceAll("-", "");
+    }
+
+    public static boolean isSpecialChar(String str) {
+        String regEx = "[ _`~!@#$%^&*()+=|{}':;',\\[\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]|\n|\r|\t";
+        Pattern p = Pattern.compile(regEx);
+        Matcher m = p.matcher(str);
+        return m.find();
     }
 
 
