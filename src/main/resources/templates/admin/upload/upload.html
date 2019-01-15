@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/style/bootstrap.min.css">
+    <link rel="stylesheet" href="/style/fileinput.min.css">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/js/My97DatePicker/WdatePicker.js"></script>
+    <script type="text/javascript" src="/js/fileinput.min.js"></script>
+    <style>
+        .login_frame {
+            width: 600px;
+            height: 450px;
+            padding: 13px;
+
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            margin-left: -200px;
+            margin-top: -200px;
+
+            background-color: rgba(240, 255, 255, 0.5);
+
+            border-radius: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body style="background: #2e6da4">
+<div class="login_frame">
+    <form class="form-horizontal" style="margin-top: 30px" action="/admin/doUpload" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label class="col-sm-2 control-label">标题：</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="title">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">副标题：</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="info" >
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">文件名：</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="htmlLocation" >
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">创建时间：</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="createTimeStr"
+                       readonly
+                       onclick="WdatePicker({isShowClear:false,dateFmt:'yyyy-MM-dd HH:mm:ss'})"
+                >
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-9">
+                <input name="file" type="file" class="file" data-show-preview="false">
+            </div>
+        </div>
+        <div class="form-group" style="margin-top: 20px">
+            <div class="col-sm-offset-2 col-sm-9">
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%">upload</button>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>

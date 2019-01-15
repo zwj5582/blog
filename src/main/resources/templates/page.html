@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Favicon Icon -->
+    <link rel="shortcut icon" th:href="@{/favicon.ico}"/>
+    <link rel="bookmark" th:href="@{/favicon.ico}"/>
+    <title th:text="${page.title}"></title>
+    <!-- Third-Party CSS -->
+    <link rel="stylesheet" href="/style/bootstrap.min.css">
+    <link rel="stylesheet" href="/style/octicons.css">
+    <link rel="stylesheet" href="/style/hover-min.css">
+    <link rel="stylesheet" href="/style/user-content.min.css">
+    <link rel="stylesheet" href="/style/syntax.css">
+    <!-- My CSS -->
+    <link rel="stylesheet" href="/style/common.css">
+    <!-- CSS set in layout -->
+    <link rel="stylesheet" href="/style/sidebar-post-nav.css">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+</head>
+<body>
+<header class="site-header background_write">
+    <div class="container">
+        <a id="site-header-brand" href="/" title="NullPointer">
+            <img style="vertical-align:middle;" class="circular" src="/favicon.ico">
+            <span style="vertical-align:middle;">NullPointer</span>
+        </a>
+        <nav class="site-header-nav" role="navigation">
+            <a href="/admin"
+               class=" site-header-nav-item hvr-underline-from-center"
+               target=""
+               th:title="${session.username}"
+               th:text="${session.username}"
+            >
+            </a>
+        </nav>
+        <nav class="site-header-nav" role="navigation">
+            <a href="/"
+               class=" site-header-nav-item hvr-underline-from-center"
+               target=""
+               title="Home">
+                Home
+            </a>
+        </nav>
+    </div>
+</header>
+<div class="content">
+    <section class="jumbotron geopattern" th:data-pattern-id="${page.getTitle()}">
+        <div class="container">
+            <div id="jumbotron-meta-info">
+                <h1 th:text="${page.getTitle()}"></h1>
+                <span class="meta-info">
+                <span class="octicon octicon-calendar"></span>&nbsp;&nbsp;[[${#dates.format(page.createTime, 'yyyy-MM-dd')}]]
+            </span>
+            </div>
+        </div>
+    </section>
+    <article class="post container article_width">
+        <iframe th:src="'/' + ${page.htmlLocation}"
+                scrolling="no" frameborder="0" width="100%" onload="setIframeHeight(this)"
+        ></iframe>
+    </article>
+</div>
+<footer class="container">
+    <div class="site-footer">
+    </div>
+    <!-- Third-Party JS -->
+    <script type="text/javascript" src="/js/geopattern.min.js"></script>
+    <!-- My JS -->
+    <script type="text/javascript" src="/js/script.js"></script>
+</footer>
+</body>
+<script>
+
+    var page = true;
+
+    function setIframeHeight(iframe) {
+        if (iframe) {
+            var iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
+            if (iframeWin.document.body) {
+                iframe.height = iframeWin.document.documentElement.scrollHeight || iframeWin.document.body.scrollHeight;
+            }
+        }
+    }
+
+    $(document).ready(function () {
+        $('.geopattern').each(function () {
+            $(this).geopattern($(this).data('pattern-id'));
+        });
+    });
+</script>
+</html>

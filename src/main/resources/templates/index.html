@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!--Favicon Icon-->
+    <link rel="shortcut icon" th:href="@{/favicon.ico}"/>
+    <link rel="bookmark" th:href="@{/favicon.ico}"/>
+
+    <title>NullPointer</title>
+
+    <!-- Third-Party CSS -->
+    <link rel="stylesheet" href="/style/bootstrap.min.css">
+    <link rel="stylesheet" href="/style/octicons.css">
+
+
+    <!-- My CSS -->
+    <link rel="stylesheet" href="/style/common.css">
+
+    <link rel="stylesheet" href="/style/index.css">
+
+    <link rel="stylesheet" href="/style/hover-min.css">
+    <link rel="stylesheet" href="/style/syntax.css">
+
+    <link rel="stylesheet" href="/style/sidebar-popular-repo.css">
+
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+
+</head>
+
+
+<body>
+
+<header class="site-header">
+    <div class="container">
+        <a id="site-header-brand" href="/" title="NullPointer">
+            <img style="vertical-align:middle;" class="circular" src="favicon.ico">
+            <span style="vertical-align:middle;">NullPointer</span>
+        </a>
+        <nav class="site-header-nav" role="navigation">
+            <a href="/admin"
+               class=" site-header-nav-item hvr-underline-from-center"
+               target=""
+               th:title="${session.username}"
+               th:text="${session.username}"
+            >
+            </a>
+        </nav>
+        <nav class="site-header-nav" role="navigation">
+            <a href="/"
+               class=" site-header-nav-item hvr-underline-from-center"
+               target=""
+               title="Home"
+            >
+                Home
+            </a>
+        </nav>
+    </div>
+</header>
+
+
+<div class="content">
+    <section class="jumbotron">
+        <div class="container">
+            <h2 style="font-size: 50px">
+                最有价值的想法，恰恰来源于对中介方式的拒绝。
+            </h2>
+            <div id="jumbotron-meta-info">
+
+            </div>
+        </div>
+    </section>
+    <section class="content container">
+
+        <div class="row">
+
+            <!-- Post List -->
+            <div class="col-md-8">
+
+                <ol class="post-list" th:each="page : ${pageContents}">
+                    <li class="post-list-item">
+                        <h2 class="post-list-title">
+                            <a class="hvr-underline-from-center"
+                               th:href="'page/' + ${page.id} " th:text="${page.title}"></a>
+                        </h2>
+                        <p class="post-list-description" th:text="${page.info}">
+
+                        </p>
+                        <p class="post-list-meta">
+                            <span class="octicon octicon-calendar"></span>
+                            <span th:text="${#dates.format(page.createTime, 'yyyy-MM-dd')}"></span>
+                        </p>
+                    </li>
+
+                </ol>
+
+
+                <div class="pagination text-align">
+                    <div class="btn-group">
+
+
+                    </div>
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+</div>
+
+
+<footer class="container">
+    <div class="site-footer">
+
+    </div>
+    <!-- Third-Party JS -->
+    <script type="text/javascript" src="js/geopattern.min.js"></script>
+    <!-- My JS -->
+    <script type="text/javascript" src="js/script.js"></script>
+</footer>
+
+
+</body>
+
+</html>

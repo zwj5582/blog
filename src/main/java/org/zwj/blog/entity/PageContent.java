@@ -1,0 +1,58 @@
+/*
+ *  Created by ZhongWenjie on 2019-01-05 22:40
+ */
+
+package org.zwj.blog.entity;
+
+import lombok.Data;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.springframework.beans.BeanUtils;
+import org.springframework.web.multipart.MultipartFile;
+import org.zwj.blog.utils.Util;
+
+import javax.persistence.*;
+import java.io.File;
+import java.io.Serializable;
+import java.util.Date;
+
+@Entity
+@Table(name = "page_content")
+@Data
+public class PageContent implements Serializable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    private String type = "page";
+
+    private String title;
+
+    private String info;
+
+    private String htmlLocation;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createTime;
+
+    @Transient private String createTimeStr;
+
+    @Transient private MultipartFile file;
+
+    public static PageContent create(PageContent pageContent) {
+        String createTimeStr = pageContent.getCreateTimeStr();
+        if (Util.valid(createTimeStr))
+            pageContent.setCreateTime(
+                    DateTime.parse(createTimeStr, DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"))
+                            .toDate());
+        else
+            pageContent.setCreateTime(new Date());
+        if (Util.valid(pageContent.getFile()) && !Util.valid(pageContent.getHtmlLocation())) {
+            String filename = pageContent.getFile().getOriginalFilename();
+            pageContent.setHtmlLocation(filename);
+        }
+        return pageContent;
+    }
+}

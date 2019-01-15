@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "html.content.location",
+      "type": "java.lang.String",
+      "description": "Description for html.content.location."
+    }
+  ]
+}
