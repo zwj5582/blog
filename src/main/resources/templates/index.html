@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <base th:href="@{${#servletContext.getAttribute('httpServerHost')}}">
 
     <!--Favicon Icon-->
     <link rel="shortcut icon" th:href="@{/favicon.ico}"/>
@@ -43,7 +44,7 @@
         <nav class="site-header-nav" role="navigation"
              th:if="${session.SPRING_SECURITY_CONTEXT != null && session.SPRING_SECURITY_CONTEXT.authentication.principal.username != null}">
             <a href="/admin"
-               class=" site-header-nav-item hvr-underline-from-center"
+               class="site-header-nav-item hvr-underline-from-center"
                target=""
                th:title="${session.SPRING_SECURITY_CONTEXT.authentication.principal.username}"
                th:text="${session.SPRING_SECURITY_CONTEXT.authentication.principal.username}"

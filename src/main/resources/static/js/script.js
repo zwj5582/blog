@@ -10,15 +10,14 @@ var windowScroll = function () {
         system.mac = p.indexOf("Mac") == 0;
         system.x11 = (p == "X11") || (p.indexOf("Linux") == 0);
         if(system.win||system.mac||system.xll){
-            console.log($(window).scrollTop());
             if ($(window).scrollTop() > 70) {
                 $('.site-header').addClass('site-header-nav-scrolled');
-                if (page)
+                if (typeof(page) != 'undefined' && page != null && page)
                     $('.site-header').removeClass('background_write');
                 $('.icon-logo').addClass('site-header-nav-scrolled');
             } else {
                 $('.site-header').removeClass('site-header-nav-scrolled');
-                if (page)
+                if ( typeof(page) != 'undefined' && page != null && page )
                     $('.site-header').addClass('background_write');
                 $('.icon-logo').removeClass('site-header-nav-scrolled');
             }

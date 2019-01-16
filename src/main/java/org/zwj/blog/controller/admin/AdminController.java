@@ -30,7 +30,8 @@ public class AdminController {
         page = PageContent.create(page);
         String uuid = Util.randomUUIDToString();
         String baseDir = FilenameUtils.concat(location, uuid);
-        FileUtils.deCompress(page.getFile(), baseDir, true);
+        String originalFileAbsolutePath = FileUtils.saveFile(page.getFile(), baseDir, false);
+        page.setOriginalLocation(FileUtils.toRelativelyPathWithUnix(location,originalFileAbsolutePath));
         File html = FileUtils.findFileFirstOrLikeFirst(baseDir, "root.html", "html");
         page.setHtmlLocation(FileUtils.toRelativelyPathWithUnix(location, html.getAbsolutePath()));
         pageContentService.savePageContent(page);

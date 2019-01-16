@@ -34,6 +34,8 @@ public class PageContent implements Serializable {
 
     private String htmlLocation;
 
+    private String originalLocation;
+
     private String filename;
 
     @Temporal(TemporalType.TIMESTAMP)

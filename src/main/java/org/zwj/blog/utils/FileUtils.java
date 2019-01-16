@@ -61,7 +61,7 @@ public class FileUtils {
         return constructor.newInstance(in);
     }
 
-    public static void deCompress(File file, String baseDir, Boolean delete)
+    public static String deCompress(File file, String baseDir, Boolean delete)
             throws IOException, InvocationTargetException, NoSuchMethodException,
                     NotSupportedException, InstantiationException, IllegalAccessException {
         baseDir = Util.valid(baseDir) ? baseDir : file.getParent();
@@ -71,10 +71,15 @@ public class FileUtils {
                 createInputStream(
                         FilenameUtils.getExtension(file.getName()), new FileInputStream(file))) {
             ArchiveEntry archiveEntry;
+            String tmpBaseDir = baseDir;
             while (Util.valid(archiveEntry = archiveInputStream.getNextEntry())) {
                 if (archiveEntry.isDirectory()) {
-                    File dir = new File(baseDir, archiveEntry.getName());
+                    String name = archiveEntry.getName();
+                    if (Util.isSpecialChar(archiveEntry.getName()))
+                        name = Util.randomUUIDToString();
+                    File dir = new File(tmpBaseDir, name);
                     org.apache.commons.io.FileUtils.forceMkdir(dir);
+                    tmpBaseDir = dir.getAbsolutePath();
                 } else {
                     String baseName = FilenameUtils.getBaseName(archiveEntry.getName());
                     String extension = FilenameUtils.getExtension(archiveEntry.getName());
@@ -83,38 +88,74 @@ public class FileUtils {
                     String name = baseName + "." + extension;
                     try (OutputStream out =
                             new BufferedOutputStream(
-                                    new FileOutputStream(new File(baseDir, name)),
+                                    new FileOutputStream(new File(tmpBaseDir, name)),
                                     BUFFER_SIZE)) {
                         IOUtils.copy(archiveInputStream, out);
                     }
                 }
             }
         }
+        String absolutePath = file.getAbsolutePath();
         if (Util.valid(delete)) {
             org.apache.commons.io.FileUtils.forceDelete(file);
         }
+        return absolutePath;
     }
 
-    public static void deCompress(MultipartFile file, String baseDir, Boolean delete)
+    public static String deCompress(MultipartFile file, String baseDir, Boolean delete)
             throws IOException, NotSupportedException, InstantiationException,
                     IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         File baseDirFile = new File(baseDir);
         if (!baseDirFile.exists()) org.apache.commons.io.FileUtils.forceMkdir(baseDirFile);
-        File tmp = new File(baseDir, Objects.requireNonNull(file.getOriginalFilename()));
+        String extension = FilenameUtils.getExtension(file.getOriginalFilename());
+        String baseName = FilenameUtils.getBaseName(file.getOriginalFilename());
+        if ( Util.isSpecialChar(baseName) )
+            baseName = Util.randomUUIDToString();
+        File tmp = new File(baseDir, baseName + "." + extension);
         file.transferTo(tmp);
         deCompress(tmp, null, delete);
+        return tmp.getAbsolutePath();
     }
 
     public static void copyFile(File source, File target) throws IOException {
         org.apache.commons.io.FileUtils.copyFile(source, target);
     }
 
-    public static void saveFile(File file, String baseDir)
+    public static void saveFile(File file, String baseDir, Boolean delete)
             throws NoSuchMethodException, IOException, NotSupportedException,
                     InstantiationException, IllegalAccessException, InvocationTargetException {
+        File dir = new File(baseDir);
+        if (!dir.exists())
+            org.apache.commons.io.FileUtils.forceMkdir(dir);
         if (map.keySet().contains(FilenameUtils.getExtension(file.getName()).toLowerCase()))
-            deCompress(file, baseDir, true);
-        else copyFile(file, new File(baseDir, file.getName()));
+            deCompress(file, baseDir, delete);
+        else {
+            String extension = FilenameUtils.getExtension(file.getName());
+            String baseName = FilenameUtils.getBaseName(file.getName());
+            if ( Util.isSpecialChar(baseName) )
+                baseName = Util.randomUUIDToString();
+            File tmp = new File(baseDir, baseName + "." + extension);
+            copyFile(file, tmp);
+        }
+    }
+
+    public static String saveFile(MultipartFile file, String baseDir, Boolean delete)
+            throws NoSuchMethodException, IOException, NotSupportedException,
+            InstantiationException, IllegalAccessException, InvocationTargetException {
+        File dir = new File(baseDir);
+        if (!dir.exists())
+            org.apache.commons.io.FileUtils.forceMkdir(dir);
+        if (map.keySet().contains(FilenameUtils.getExtension(file.getOriginalFilename()).toLowerCase()))
+            return deCompress(file, baseDir, delete);
+        else{
+            String extension = FilenameUtils.getExtension(file.getOriginalFilename());
+            String baseName = FilenameUtils.getBaseName(file.getOriginalFilename());
+            if ( Util.isSpecialChar(baseName) )
+                baseName = Util.randomUUIDToString();
+            File tmp = new File(baseDir, baseName + "." + extension);
+            file.transferTo(tmp);
+            return tmp.getAbsolutePath();
+        }
     }
 
     public static Collection<File> listFiles(File dir, String... extensions) {
