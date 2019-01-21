@@ -5,6 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <base th:href="@{${#servletContext.getAttribute('httpServerHost')}}">
+    <link rel="shortcut icon" href="/images/favicon.ico"/>
+    <link rel="bookmark" href="/images/favicon.ico"/>
     <title>NullPointer</title>
     <link rel="stylesheet" href="/style/bootstrap.min.css">
     <link rel="stylesheet" href="/style/fileinput.min.css">
@@ -46,7 +48,7 @@
         <ul class="layui-nav layui-layout-right">
             <li class="layui-nav-item">
                 <a>
-                    <img src="/favicon.ico" class="layui-nav-img">
+                    <img src="/images/favicon.ico" class="layui-nav-img">
                     [[${session.SPRING_SECURITY_CONTEXT.authentication.principal.username}]]
                 </a>
                 <dl class="layui-nav-child">
@@ -70,13 +72,13 @@
                 <li class="layui-nav-item layui-nav-itemed">
                     <a>主页</a>
                     <dl class="layui-nav-child">
-                        <dd>
-                            <a>Dashboard</a>
-                        </dd>
-                        <dd>
+                        <dd class="layui-this">
                             <a target="iframe" href="/admin/upload">
                                 Upload
                             </a>
+                        </dd>
+                        <dd>
+                            <a>Dashboard</a>
                         </dd>
                     </dl>
                 </li>
@@ -84,20 +86,28 @@
         </div>
     </div>
 
-    <div class="layui-body">
+    <div class="layui-body" style="overflow: hidden;">
         <iframe id="iframe" name="iframe"
                 scrolling="no" frameborder="0" width="100%" height="100%" onload="setIframeHeight(this)"
         ></iframe>
     </div>
+    <div class="layui-footer">
+        黄宝康版权所有&copy;Tel:18679758769
+    </div>
 </div>
 <script src="/layui/layui.js"></script>
 <script>
+
+    $(function(){
+        $("#iframe").attr("src","/admin/upload");
+    });
 
     function setIframeHeight(iframe) {
         if (iframe) {
             var iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
             if (iframeWin.document.body) {
                 iframe.height = iframeWin.document.documentElement.scrollHeight || iframeWin.document.body.scrollHeight;
+                // iframe.height = iframe.height - 15;
             }
         }
     }

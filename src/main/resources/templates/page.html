@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <base th:href="@{${#servletContext.getAttribute('httpServerHost')}}">
     <!-- Favicon Icon -->
-    <link rel="shortcut icon" th:href="@{/favicon.ico}"/>
-    <link rel="bookmark" th:href="@{/favicon.ico}"/>
+    <link rel="shortcut icon" href="/images/favicon.ico"/>
+    <link rel="bookmark" href="/images/favicon.ico"/>
     <title th:text="${page.title}"></title>
     <!-- Third-Party CSS -->
     <link rel="stylesheet" href="/style/bootstrap.min.css">
@@ -26,7 +26,7 @@
 <header class="site-header background_write">
     <div class="container">
         <a id="site-header-brand" href="/" title="NullPointer">
-            <img style="vertical-align:middle;" class="circular" src="/favicon.ico">
+            <img style="vertical-align:middle;" class="circular" src="/images/favicon.ico">
             <span style="vertical-align:middle;">NullPointer</span>
         </a>
         <nav class="site-header-nav" role="navigation"
@@ -61,7 +61,7 @@
         </div>
     </section>
     <article class="post container article_width">
-        <iframe th:src="'/' + ${page.htmlLocation}"
+        <iframe th:src="'/data/' + ${page.htmlLocation}"
                 scrolling="no" frameborder="0" width="100%" onload="setIframeHeight(this)"
         ></iframe>
     </article>
@@ -84,6 +84,7 @@
             var iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
             if (iframeWin.document.body) {
                 iframe.height = iframeWin.document.documentElement.scrollHeight || iframeWin.document.body.scrollHeight;
+                // iframe.height = iframe.height - 10;
             }
         }
     }

@@ -4,9 +4,9 @@
 
 package org.zwj.blog.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
@@ -21,8 +21,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/admin/login").setViewName("admin/login");
+        registry.addViewController("/admin").setViewName("admin/admin");
+        registry.addViewController("/admin/").setViewName("admin/admin");
         registry.addViewController("/admin/upload").setViewName("admin/upload/upload");
-        registry.addViewController("/admin").setViewName("admin/admin.html");
     }
 
     @Override
@@ -39,7 +40,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .allowedHeaders("*");
     }
 
-    @Bean
+    @Autowired
     public ServletContext getServletContext(
             ServletContext servletContext,
             ServerProperties serverProperties,

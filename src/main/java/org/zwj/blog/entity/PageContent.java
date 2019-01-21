@@ -4,6 +4,7 @@
 
 package org.zwj.blog.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -39,6 +40,7 @@ public class PageContent implements Serializable {
     private String filename;
 
     @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
     @Transient private String createTimeStr;

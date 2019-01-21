@@ -2,7 +2,7 @@
  *  Created by ZhongWenjie on 2019-01-13 16:04
  */
 
-package org.zwj.blog.controller.admin;
+package org.zwj.blog.controller;
 
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;

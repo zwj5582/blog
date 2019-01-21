@@ -5,6 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <base th:href="@{${#servletContext.getAttribute('httpServerHost')}}">
+    <link rel="shortcut icon" href="/images/favicon.ico"/>
+    <link rel="bookmark" href="/images/favicon.ico"/>
     <title>Title</title>
     <link rel="stylesheet" href="/style/bootstrap.min.css">
     <link rel="stylesheet" href="/style/fileinput.min.css">
@@ -12,66 +14,170 @@
     <script type="text/javascript" src="/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="/js/My97DatePicker/WdatePicker.js"></script>
     <script type="text/javascript" src="/js/fileinput.min.js"></script>
-    <style>
-        .login_frame {
-            width: 600px;
-            height: 450px;
-            padding: 13px;
-
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            margin-left: -200px;
-            margin-top: -200px;
-
-            background-color: rgba(240, 255, 255, 0.5);
-
-            border-radius: 10px;
-            text-align: center;
-        }
-    </style>
+    <link rel="stylesheet" href="/layui/css/layui.css">
 </head>
 <body>
-<div class="login_frame">
-    <form class="form-horizontal" style="margin-top: 30px" action="/admin/doUpload" method="post" enctype="multipart/form-data">
-        <div class="form-group">
-            <label class="col-sm-2 control-label">标题：</label>
-            <div class="col-sm-9">
-                <input type="text" class="form-control" name="title">
+    <table id="demo" class="layui-hide" lay-filter="test"></table>
+    <div id="pageDemo" style="margin-top: -10px"></div>
+</body>
+<script src="/layui/layui.js"></script>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<script type="text/html" id="toolbarDemo">
+    <form class="form-inline">
+        <div class="row">
+            <div class="col-sm-3 form-group">
+                <label>标题：</label>
+                <input type="text" class="form-control">
+            </div>
+            <div class="col-sm-3 form-group" >
+                <label>副标题：</label>
+                <input type="text" class="form-control">
             </div>
         </div>
-        <div class="form-group">
-            <label class="col-sm-2 control-label">副标题：</label>
-            <div class="col-sm-9">
-                <input type="text" class="form-control" name="info" >
+        <div class="row">
+            <div class="col-sm-3 form-group" >
+                <label>日期：</label>
+                <input id="begin" type="text" class="form-control" readonly/>
             </div>
-        </div>
-        <div class="form-group">
-            <label class="col-sm-2 control-label">文件名：</label>
-            <div class="col-sm-9">
-                <input type="text" class="form-control" name="filename" >
+            <div class="col-sm-3 form-group" >
+                <label>至&emsp;&emsp;&emsp;</label>
+                <input id="end" type="text" class="form-control" readonly/>
             </div>
-        </div>
-        <div class="form-group">
-            <label class="col-sm-2 control-label">创建时间：</label>
-            <div class="col-sm-9">
-                <input type="text" class="form-control" name="createTimeStr"
-                       readonly
-                       onclick="WdatePicker({isShowClear:false,dateFmt:'yyyy-MM-dd HH:mm:ss'})"
-                >
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="col-sm-offset-2 col-sm-9">
-                <input name="file" type="file" class="file" data-show-preview="false">
-            </div>
-        </div>
-        <div class="form-group" style="margin-top: 20px">
-            <div class="col-sm-offset-2 col-sm-9">
-                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%">upload</button>
+            <div class="col-sm-3 form-group">
+                <button type="button" class="btn btn-default">查询</button>
             </div>
         </div>
     </form>
-</div>
-</body>
+</script>
+<script>
+
+    layui.use(['laydate', 'laypage', 'layer', 'table', 'carousel', 'upload', 'element', 'slider'], function(){
+        var laydate = layui.laydate //日期
+            ,laypage = layui.laypage //分页
+            ,layer = layui.layer //弹层
+            ,table = layui.table //表格
+            ,upload = layui.upload //上传
+            ,element = layui.element; //元素操作
+
+        $.ajax({
+            async: true,
+            url: "/page/list",
+            type: "GET",
+            dataType: "json",
+            success: function(data){
+                console.log(data);
+                table.render({
+                    done: function () {
+                        $(".layui-datetime").each(function(){
+                            laydate.render({
+                                elem: '#' + this.id
+                                ,type: 'datetime'
+                                ,value: $(this).val()
+                                ,calendar: true
+                                ,btns: ['now', 'confirm']
+                            });
+                        });
+                        var begin = laydate.render({
+                            elem: '#begin'
+                            ,type: 'date'
+                            ,format: 'yyyy-MM-dd'
+                            ,value: $("#begin").val()
+                            ,calendar: true
+                            ,btns: ['now', 'confirm']
+                            ,max: $("#end").val()
+                            ,done: function(value, date){
+                                end.config.min = {
+                                    year: date.year,
+                                    month: date.month - 1,
+                                    date: date.date + 1
+                                }
+                            }
+                        });
+                        var end = laydate.render({
+                            elem: '#end'
+                            ,type: 'date'
+                            ,format: 'yyyy-MM-dd'
+                            ,value: $("#end").val()
+                            ,calendar: true
+                            ,btns: ['now', 'confirm']
+                            ,min: $("#begin").val()
+                            ,done: function(value, date){
+                                begin.config.max = {
+                                    year: date.year,
+                                    month: date.month - 1,
+                                    date: date.date - 1
+                                }
+
+                            }
+                        });
+                    }
+                    ,elem: '#demo'
+                    ,height: 'full-55'
+                    ,data: data.content
+                    ,title: '用户表'
+                    ,toolbar: '#toolbarDemo'
+                    ,limit: data.size
+                    ,cols: [
+                        [
+                            {field: 'id', title: 'ID', hide: true}
+                            ,{title: '序号' ,width: 60 , align: 'center', templet: function(row){
+                                return '<div>'+ ( row.LAY_INDEX + (data.size * data.number) ) +'</div>';
+                            }}
+                            ,{field: 'title', title: '标题', edit: 'text'}
+                            ,{field: 'info', title: '副标题', edit: 'text'}
+                            ,{field: 'filename', title: '文件名', edit: 'text'}
+                            ,{field: 'createTime', title: '创建日期', templet: function (row) {
+                                return `<input id="date_` + row.id + `" class="layui-datetime" style="border-style:none;"
+                                            value="` + row.createTime + `" readonly />`;
+                            }}
+                            ,{fixed: 'right', align:'center', toolbar: '#barDemo'}
+                        ]
+                    ]
+                });
+
+                laypage.render({
+                    elem: 'pageDemo'
+                    ,count: data.totalElements
+                    ,limit: data.size
+                    ,skin: '#1E9FFF'
+                    ,layout: ['prev', 'page', 'next','count']
+                    ,jump: function(obj, first){
+                        if(!first){
+                            layer.msg('第'+ obj.curr +'页', {offset: 'b'});
+                        }
+                    }
+                });
+
+            },
+            error: function(jqXHR){
+                var statusCode = jqXHR.status;
+                if (statusCode === 401) {
+                    top.location.href = '/admin/login';
+                }
+            }
+        });
+
+        //监听行工具事件
+        table.on('tool(test)', function(obj){ //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+            var data = obj.data //获得当前行数据
+                ,layEvent = obj.event; //获得 lay-event 对应的值
+            if(layEvent === 'detail'){
+                layer.msg('查看操作');
+            } else if(layEvent === 'del'){
+                layer.confirm('真的删除行么', function(index){
+                    obj.del(); //删除对应行（tr）的DOM结构
+                    layer.close(index);
+                    //向服务端发送删除指令
+                });
+            } else if(layEvent === 'edit'){
+                layer.msg('编辑操作');
+            }
+        });
+
+    });
+</script>
 </html>

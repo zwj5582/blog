@@ -5,6 +5,9 @@
 package org.zwj.blog.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.zwj.blog.entity.PageContent;
@@ -21,6 +24,10 @@ public class PageContentService {
 
     public List<PageContent> findAll(){
         return pageContentRepository.findAll();
+    }
+
+    public Page<PageContent> findByPage(Pageable pageable){
+        return pageContentRepository.findAll(pageable);
     }
 
     public PageContent findById(Integer id) {

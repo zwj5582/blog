@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="col-sm-10" style="margin-top: 100px">
+        <form class="form-horizontal" target="_parent" action="/admin/doUpload" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">标题：</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" name="title">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">副标题：</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" name="info" >
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">文件名：</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" name="filename" >
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">创建时间：</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" name="createTimeStr"
+                           readonly
+                           onclick="WdatePicker({isShowClear:false,dateFmt:'yyyy-MM-dd HH:mm:ss'})"
+                    >
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-9">
+                    <input name="file" type="file" class="file" data-show-preview="false">
+                </div>
+            </div>
+            <div class="form-group" style="margin-top: 20px">
+                <div class="col-sm-offset-2 col-sm-9">
+                    <button type="submit" class="btn btn-primary btn-lg" style="width: 100%">upload</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
