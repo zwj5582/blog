@@ -18,7 +18,6 @@
 </head>
 <body>
     <table id="demo" class="layui-hide" lay-filter="test"></table>
-    <div id="pageDemo" style="margin-top: -10px"></div>
 </body>
 <script src="/layui/layui.js"></script>
 <script type="text/html" id="barDemo">
@@ -31,11 +30,11 @@
         <div class="row">
             <div class="col-sm-3 form-group">
                 <label>标题：</label>
-                <input type="text" class="form-control">
+                <input type="text" class="form-control" id="title">
             </div>
             <div class="col-sm-3 form-group" >
                 <label>副标题：</label>
-                <input type="text" class="form-control">
+                <input type="text" class="form-control" id="info">
             </div>
         </div>
         <div class="row">
@@ -48,116 +47,108 @@
                 <input id="end" type="text" class="form-control" readonly/>
             </div>
             <div class="col-sm-3 form-group">
-                <button type="button" class="btn btn-default">查询</button>
+                <button type="button" class="btn btn-default" id="aaaaa" >查询</button>
             </div>
         </div>
     </form>
 </script>
 <script>
 
-    layui.use(['laydate', 'laypage', 'layer', 'table', 'carousel', 'upload', 'element', 'slider'], function(){
+    console.log(window.screen.height - parent.iframeHeight - 200);
+
+    layui.use(['laydate', 'laypage', 'layer', 'table', 'carousel', 'upload', 'element', 'slider','jquery'], function(){
         var laydate = layui.laydate //日期
             ,laypage = layui.laypage //分页
             ,layer = layui.layer //弹层
             ,table = layui.table //表格
             ,upload = layui.upload //上传
-            ,element = layui.element; //元素操作
+            ,element = layui.element //元素操作
+            ,$ = layui.$;
 
-        $.ajax({
-            async: true,
-            url: "/page/list",
-            type: "GET",
-            dataType: "json",
-            success: function(data){
-                console.log(data);
-                table.render({
-                    done: function () {
-                        $(".layui-datetime").each(function(){
-                            laydate.render({
-                                elem: '#' + this.id
-                                ,type: 'datetime'
-                                ,value: $(this).val()
-                                ,calendar: true
-                                ,btns: ['now', 'confirm']
-                            });
-                        });
-                        var begin = laydate.render({
-                            elem: '#begin'
-                            ,type: 'date'
-                            ,format: 'yyyy-MM-dd'
-                            ,value: $("#begin").val()
-                            ,calendar: true
-                            ,btns: ['now', 'confirm']
-                            ,max: $("#end").val()
-                            ,done: function(value, date){
-                                end.config.min = {
-                                    year: date.year,
-                                    month: date.month - 1,
-                                    date: date.date + 1
-                                }
-                            }
-                        });
-                        var end = laydate.render({
-                            elem: '#end'
-                            ,type: 'date'
-                            ,format: 'yyyy-MM-dd'
-                            ,value: $("#end").val()
-                            ,calendar: true
-                            ,btns: ['now', 'confirm']
-                            ,min: $("#begin").val()
-                            ,done: function(value, date){
-                                begin.config.max = {
-                                    year: date.year,
-                                    month: date.month - 1,
-                                    date: date.date - 1
-                                }
-
-                            }
-                        });
-                    }
-                    ,elem: '#demo'
-                    ,height: 'full-55'
-                    ,data: data.content
-                    ,title: '用户表'
-                    ,toolbar: '#toolbarDemo'
-                    ,limit: data.size
-                    ,cols: [
-                        [
-                            {field: 'id', title: 'ID', hide: true}
-                            ,{title: '序号' ,width: 60 , align: 'center', templet: function(row){
-                                return '<div>'+ ( row.LAY_INDEX + (data.size * data.number) ) +'</div>';
-                            }}
-                            ,{field: 'title', title: '标题', edit: 'text'}
-                            ,{field: 'info', title: '副标题', edit: 'text'}
-                            ,{field: 'filename', title: '文件名', edit: 'text'}
-                            ,{field: 'createTime', title: '创建日期', templet: function (row) {
-                                return `<input id="date_` + row.id + `" class="layui-datetime" style="border-style:none;"
+        table.render({
+            id: 'table'
+            ,elem: '#demo'
+            ,url: '/page/list'
+            ,method: 'GET'
+            ,page: true
+            ,where: {
+                page: 0,
+                size: 20
+            }
+            ,request: {
+                limitName: 'size'
+            }
+            ,height: window.screen.height - parent.iframeHeight - 140
+            ,title: '用户表'
+            ,toolbar: '#toolbarDemo'
+            ,parseData: function(res){
+                console.log(res);
+                return {
+                    "code": 0, //解析接口状态
+                    "msg": "", //解析提示文本
+                    "count": res.content.length, //解析数据长度
+                    "data": res.content  //解析数据列表
+                }
+            }
+            ,cols: [
+                [
+                    {field: 'id', title: 'ID', hide: true}
+                    ,{title: '序号' ,width: 60 , align: 'center', templet: function(row){
+                        return '<div>'+ ( row.LAY_INDEX ) +'</div>';
+                    }}
+                    ,{field: 'title', title: '标题', edit: 'text'}
+                    ,{field: 'info', title: '副标题', edit: 'text'}
+                    ,{field: 'filename', title: '文件名', edit: 'text'}
+                    ,{field: 'createTime', title: '创建日期', templet: function (row) {
+                        return `<input id="date_` + row.id + `" class="layui-datetime" style="border-style:none;"
                                             value="` + row.createTime + `" readonly />`;
-                            }}
-                            ,{fixed: 'right', align:'center', toolbar: '#barDemo'}
-                        ]
-                    ]
+                    }}
+                    ,{fixed: 'right', align:'center', toolbar: '#barDemo'}
+                ]
+            ]
+            ,done: function () {
+                $(".layui-datetime").each(function(){
+                    laydate.render({
+                        elem: '#' + this.id
+                        ,type: 'datetime'
+                        ,value: $(this).val()
+                        ,calendar: true
+                        ,btns: ['now', 'confirm']
+                    });
                 });
-
-                laypage.render({
-                    elem: 'pageDemo'
-                    ,count: data.totalElements
-                    ,limit: data.size
-                    ,skin: '#1E9FFF'
-                    ,layout: ['prev', 'page', 'next','count']
-                    ,jump: function(obj, first){
-                        if(!first){
-                            layer.msg('第'+ obj.curr +'页', {offset: 'b'});
+                var begin = laydate.render({
+                    elem: '#begin'
+                    ,type: 'date'
+                    ,format: 'yyyy-MM-dd'
+                    ,value: $("#begin").val()
+                    ,calendar: true
+                    ,btns: ['now', 'confirm']
+                    ,max: $("#end").val()
+                    ,done: function(value, date){
+                        end.config.min = {
+                            year: date.year,
+                            month: date.month - 1,
+                            date: date.date + 1
                         }
                     }
                 });
+                var end = laydate.render({
+                    elem: '#end'
+                    ,type: 'date'
+                    ,format: 'yyyy-MM-dd'
+                    ,value: $("#end").val()
+                    ,calendar: true
+                    ,btns: ['now', 'confirm']
+                    ,min: $("#begin").val()
+                    ,done: function(value, date){
+                        begin.config.max = {
+                            year: date.year,
+                            month: date.month - 1,
+                            date: date.date - 1
+                        }
 
-            },
-            error: function(jqXHR){
-                var statusCode = jqXHR.status;
-                if (statusCode === 401) {
-                    top.location.href = '/admin/login';
-                }
+                    }
+                });
             }
         });
 
@@ -178,6 +169,24 @@
             }
         });
 
+        function reload() {
+            table.reload('table',{
+                url: '/page/list',
+                where: {
+                    page: 0,
+                    size: 20
+                }
+                ,request: {
+                    limitName: 'size'
+                }
+            })
+        }
+
+        $(document).on('click','#aaaaa',function(){
+            reload();
+        });
+
     });
+
 </script>
 </html>
