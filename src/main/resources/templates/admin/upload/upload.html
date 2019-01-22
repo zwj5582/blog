@@ -54,8 +54,6 @@
 </script>
 <script>
 
-    console.log(window.screen.height - parent.iframeHeight - 200);
-
     layui.use(['laydate', 'laypage', 'layer', 'table', 'carousel', 'upload', 'element', 'slider','jquery'], function(){
         var laydate = layui.laydate //日期
             ,laypage = layui.laypage //分页
@@ -71,14 +69,17 @@
             ,url: '/page/list'
             ,method: 'GET'
             ,page: true
+            ,limit: 20
             ,where: {
-                page: 0,
-                size: 20
+                title : $("#title").val()
+                ,info: $("#info").val()
+                ,begin: $("#begin").val()
+                ,end: $("#end").val()
             }
             ,request: {
                 limitName: 'size'
             }
-            ,height: window.screen.height - parent.iframeHeight - 140
+            ,height: parent.iframeHeight - 10
             ,title: '用户表'
             ,toolbar: '#toolbarDemo'
             ,parseData: function(res){
@@ -86,7 +87,7 @@
                 return {
                     "code": 0, //解析接口状态
                     "msg": "", //解析提示文本
-                    "count": res.content.length, //解析数据长度
+                    "count": res.count, //解析数据长度
                     "data": res.content  //解析数据列表
                 }
             }
@@ -170,16 +171,23 @@
         });
 
         function reload() {
+            var title = $("#title").val();
+            var info = $("#info").val();
+            var begin = $("#begin").val();
+            var end = $("#end").val();
             table.reload('table',{
-                url: '/page/list',
-                where: {
-                    page: 0,
-                    size: 20
+                url: '/page/list'
+                ,where: {
+                    title : title
+                    ,info: info
+                    ,begin: begin
+                    ,end: end
                 }
-                ,request: {
-                    limitName: 'size'
-                }
-            })
+            });
+            $("#title").val(title);
+            $("#info").val(info);
+            $("#begin").val(begin);
+            $("#end").val(end);
         }
 
         $(document).on('click','#aaaaa',function(){

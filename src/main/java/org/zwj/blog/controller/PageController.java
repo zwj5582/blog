@@ -5,6 +5,7 @@
 package org.zwj.blog.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,12 @@ public class PageController {
                     Pageable pageable,
             PageContentVO pageContentVO) {
         return ResponseEntitys.success(
-                pageContentService.findByConditionAndPageable(pageContentVO, pageable));
+                pageContentService.findByConditionAndPageable(
+                        pageContentVO,
+                        PageRequest.of(
+                                pageable.getPageNumber() - 1,
+                                pageable.getPageSize(),
+                                pageable.getSort())),
+                pageContentVO);
     }
 }

@@ -39,14 +39,32 @@ public class ResponseEntitys<T> extends ResponseEntity<T> {
         return ok(body);
     }
 
+    public static ResponseEntity success(Object body, Object filters) {
+        if ( body instanceof Page ) {
+            return ok(createPageInfo((Page) body, filters));
+        }
+        return ok(body);
+    }
+
     private static Map createPageInfo(Page page) {
         if ( !Util.valid(page) ) return ImmutableMap.of();
         return ImmutableMap.of(
                 "content", page.getContent(),
-                "totalElements",page.getTotalElements(),
+                "count",page.getTotalElements(),
                 "totalPages",page.getTotalPages(),
-                "size",page.getSize(),
-                "number",page.getNumber()
+                "limit",page.getSize(),
+                "page",page.getNumber() + 1
+        );
+    }
+
+    private static Map createPageInfo(Page page,Object filters) {
+        if ( !Util.valid(page) ) return ImmutableMap.of();
+        return ImmutableMap.of(
+                "content", page.getContent(),
+                "filters", filters,
+                "count",page.getTotalElements(),
+                "limit",page.getSize(),
+                "page",page.getNumber() + 1
         );
     }
 
