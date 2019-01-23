@@ -78,6 +78,15 @@ public class PageContentService {
                                                                                         .getInfo())
                                                                         + "%"));
                                     }
+                                    if (pageContentVO.getPublicity() != null) {
+                                        predicate
+                                                .getExpressions()
+                                                .add(
+                                                        (pageContentVO.getPublicity()) ?
+                                                                criteriaBuilder.isTrue(root.get("publicity")) :
+                                                                criteriaBuilder.isFalse(root.get("publicity"))
+                                                );
+                                    }
                                     return predicate;
                                 });
         return pageContentRepository.findAll(where, pageable);

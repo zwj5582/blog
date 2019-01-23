@@ -70,7 +70,10 @@ public class BeanUtils {
 
         if (Util.valid(notIgnoreProperties)) {
             List<String> list = Arrays.asList(notIgnoreProperties);
-            List<String> collect = ignoreProperties.stream().filter(list::contains).collect(Collectors.toList());
+            List<String> collect = ignoreProperties
+                    .stream()
+                    .filter((item) -> !list.contains(item))
+                    .collect(Collectors.toList());
             ignoreProperties = (Util.valid(collect)) ? collect : Lists.newArrayList();
         }
 

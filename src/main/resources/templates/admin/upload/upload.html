@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="/style/fileinput.min.css">
     <script type="text/javascript" src="/js/jquery.min.js"></script>
     <script type="text/javascript" src="/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="/js/My97DatePicker/WdatePicker.js"></script>
     <script type="text/javascript" src="/js/fileinput.min.js"></script>
     <script type="text/javascript" src="/js/template-web.js"></script>
     <link rel="stylesheet" href="/layui/css/layui.css">
@@ -50,14 +49,13 @@
             <div class="col-sm-3 form-group" >
                 <label>是否公开：</label>
                 <select class="form-control" id="publicity" style="width: 100px" lay-ignore>
-                    <option>全部</option>
-                    <option>公开</option>
-                    <option>私密</option>
+                    <option value="">全部</option>
+                    <option value="true">公开</option>
+                    <option value="false">私密</option>
                 </select>
             </div>
             <div class="col-sm-3 form-group" style="margin-left: -80px">
                 <button type="button" class="btn btn-default" id="search" >查询</button>
-                <button type="button" class="btn btn-default" id="save" >保存</button>
             </div>
         </div>
     </form>
@@ -87,10 +85,9 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label">创建时间：</label>
                     <div class="col-sm-9">
-                        <input type="text" class="form-control needUpload" name="createTimeStr"
+                        <input type="text" class="form-control needUpload" name="createTime" id="createTime"
                                readonly
                                value="<%=createTime%>"
-                               onclick="WdatePicker({isShowClear:false,dateFmt:'yyyy-MM-dd HH:mm:ss'})"
                         >
                     </div>
                 </div>
@@ -144,6 +141,7 @@
                 vo.info =  res.filters.info;
                 vo.begin =  res.filters.begin;
                 vo.end =  res.filters.end;
+                vo.publicity = (res.filters.publicity == null) ? '' : (res.filters.publicity) ? 'true' : 'false';
                 return {
                     "code": 0, //解析接口状态
                     "msg": "", //解析提示文本
@@ -161,7 +159,7 @@
                     ,{field: 'info', title: '副标题'}
                     ,{field: 'filename', title: '文件名'}
                     ,{field: 'publicity', title: '是否公开',width: 120 ,templet: function (row) {
-                        return (row.publicity) ? '公开' : '私密';
+                        return `<span id="publicity_` + row.id + `">` + ( (row.publicity) ? `公开` : `私密` ) + `</span>`;
                     }}
                     ,{field: 'createTime', title: '创建日期'}
                     ,{fixed: 'right', align:'center', toolbar: '#barDemo'}
@@ -172,6 +170,7 @@
                 $("#end").val(vo.end == null ? "" : vo.end );
                 $("#title").val(vo.title == null ? "" : vo.title );
                 $("#info").val(vo.info == null ? "" : vo.info );
+                $("#publicity").val(vo.publicity);
 
                 $(".layui-datetime").each(function(){
                     laydate.render({
@@ -245,21 +244,35 @@
                         $(".needUpload").each(function () {
                             json[this.name] = this.value;
                         });
+                        json.publicity = (json.publicity === 'true');
 
-                        console.log(json);
-
+                        layer.close(index);
+                        index = layer.load(1);
                         $.ajax({
                             url: "/page/update"
                             ,method: "POST"
                             ,data: JSON.stringify(json)
                             ,contentType: 'application/json'
                             ,success: function (data) {
+                                obj.update(json);
+                                $("#publicity_" + json.id).html((json.publicity) ? '公开' : '私密');
+                                layer.close(index);
 
+                                layer.msg('修改成功', {
+                                    icon: 1,
+                                    time: 1000 //2秒关闭（如果不配置，默认是3秒）
+                                });
                             }
                         });
-
-                        obj.update(json);
-                        layer.close(index);
+                    }
+                    ,success: function(layero, index){
+                        laydate.render({
+                            elem: '#createTime'
+                            ,type: 'datetime'
+                            ,value: data.createTime
+                            ,calendar: true
+                            ,btns: ['now', 'confirm']
+                        });
                     }
                     ,content: template('pageDetail',data)
                 });
@@ -282,7 +295,11 @@
         });
 
         $(document).on('change','#info',function(){
-            vo.info = this.info;
+            vo.info = this.value;
+        });
+
+        $(document).on('change','#publicity',function(){
+            vo.publicity = this.value;
         });
 
     });
