@@ -8,13 +8,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.springframework.beans.BeanUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.zwj.blog.utils.Util;
 
 import javax.persistence.*;
-import java.io.File;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -39,8 +36,10 @@ public class PageContent implements Serializable {
 
     private String filename;
 
+    private Boolean publicity;
+
     @Temporal(TemporalType.TIMESTAMP)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone="GMT+8")
     private Date createTime;
 
     @Transient private String createTimeStr;

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.zwj.blog.entity.PageContent;
 import org.zwj.blog.repository.PageContentRepository;
+import org.zwj.blog.utils.BeanUtils;
 import org.zwj.blog.utils.Util;
 import org.zwj.blog.vo.PageContentVO;
 
@@ -22,10 +23,9 @@ import java.util.List;
 @Transactional
 public class PageContentService {
 
-    @Autowired
-    private PageContentRepository pageContentRepository;
+    @Autowired private PageContentRepository pageContentRepository;
 
-    public List<PageContent> findAll(){
+    public List<PageContent> findAll() {
         return pageContentRepository.findAll();
     }
 
@@ -37,21 +37,61 @@ public class PageContentService {
         pageContentRepository.save(pageContent);
     }
 
-    public Page<PageContent> findByConditionAndPageable(PageContentVO pageContentVO, Pageable pageable) {
-        Specification<PageContent> where = Specification.where(
-                (Specification<PageContent>) (root, query, criteriaBuilder) -> {
-                    Predicate predicate = criteriaBuilder.conjunction();
-                    if (Util.valid(pageContentVO.getBegin()) && Util.valid(pageContentVO.getEnd())) {
-                        predicate.getExpressions().add(criteriaBuilder.between(root.get("createTime"), pageContentVO.getBegin(), pageContentVO.getEnd()));
-                    }
-                    if (Util.valid(pageContentVO.getTitle())) {
-                        predicate.getExpressions().add(criteriaBuilder.like(root.get("title"), "%" + StringUtils.trim(pageContentVO.getTitle()) + "%"));
-                    }
-                    if (Util.valid(pageContentVO.getInfo())) {
-                        predicate.getExpressions().add(criteriaBuilder.like(root.get("info"), "%" + StringUtils.trim(pageContentVO.getInfo()) + "%"));
-                    }
-                    return predicate;
-                });
+    public Page<PageContent> findByConditionAndPageable(
+            PageContentVO pageContentVO, Pageable pageable) {
+        Specification<PageContent> where =
+                Specification.where(
+                        (Specification<PageContent>)
+                                (root, query, criteriaBuilder) -> {
+                                    Predicate predicate = criteriaBuilder.conjunction();
+                                    if (Util.valid(pageContentVO.getBegin())
+                                            && Util.valid(pageContentVO.getEnd())) {
+                                        predicate
+                                                .getExpressions()
+                                                .add(
+                                                        criteriaBuilder.between(
+                                                                root.get("createTime"),
+                                                                pageContentVO.getBegin(),
+                                                                pageContentVO.getEnd()));
+                                    }
+                                    if (Util.valid(pageContentVO.getTitle())) {
+                                        predicate
+                                                .getExpressions()
+                                                .add(
+                                                        criteriaBuilder.like(
+                                                                root.get("title"),
+                                                                "%"
+                                                                        + StringUtils.trim(
+                                                                                pageContentVO
+                                                                                        .getTitle())
+                                                                        + "%"));
+                                    }
+                                    if (Util.valid(pageContentVO.getInfo())) {
+                                        predicate
+                                                .getExpressions()
+                                                .add(
+                                                        criteriaBuilder.like(
+                                                                root.get("info"),
+                                                                "%"
+                                                                        + StringUtils.trim(
+                                                                                pageContentVO
+                                                                                        .getInfo())
+                                                                        + "%"));
+                                    }
+                                    return predicate;
+                                });
         return pageContentRepository.findAll(where, pageable);
+    }
+
+    public Page<PageContent> findByPage(Pageable pageable) {
+        return pageContentRepository.findAll(pageable);
+    }
+
+    public void update(PageContent pageContent) throws Exception {
+        PageContent content =
+                pageContentRepository
+                        .findById(pageContent.getId())
+                        .orElseThrow(() -> new Exception("Can not find Entity ID;"));
+        BeanUtils.copyProperties(pageContent, content, Util::valid, new String[]{"publicity"}, new String[]{"id"});
     }
 }

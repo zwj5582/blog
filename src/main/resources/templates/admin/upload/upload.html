@@ -14,6 +14,7 @@
     <script type="text/javascript" src="/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="/js/My97DatePicker/WdatePicker.js"></script>
     <script type="text/javascript" src="/js/fileinput.min.js"></script>
+    <script type="text/javascript" src="/js/template-web.js"></script>
     <link rel="stylesheet" href="/layui/css/layui.css">
 </head>
 <body>
@@ -46,13 +47,74 @@
                 <label>至&emsp;&emsp;&emsp;</label>
                 <input id="end" type="text" class="form-control" readonly/>
             </div>
-            <div class="col-sm-3 form-group">
-                <button type="button" class="btn btn-default" id="aaaaa" >查询</button>
+            <div class="col-sm-3 form-group" >
+                <label>是否公开：</label>
+                <select class="form-control" id="publicity" style="width: 100px" lay-ignore>
+                    <option>全部</option>
+                    <option>公开</option>
+                    <option>私密</option>
+                </select>
+            </div>
+            <div class="col-sm-3 form-group" style="margin-left: -80px">
+                <button type="button" class="btn btn-default" id="search" >查询</button>
+                <button type="button" class="btn btn-default" id="save" >保存</button>
             </div>
         </div>
     </form>
 </script>
+<script type="text/html" id="pageDetail">
+    <div class="container-fluid" style="margin-top: 10px">
+        <div class="col-sm-12">
+            <form class="form-horizontal" target="_parent" action="/admin/doUpload" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">标题：</label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control needUpload" name="title" value="<%=title%>">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">副标题：</label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control needUpload" name="info" value="<%=info%>" >
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">文件名：</label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control needUpload" name="filename" value="<%=filename%>" >
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">创建时间：</label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control needUpload" name="createTimeStr"
+                               readonly
+                               value="<%=createTime%>"
+                               onclick="WdatePicker({isShowClear:false,dateFmt:'yyyy-MM-dd HH:mm:ss'})"
+                        >
+                    </div>
+                </div>
+                <div class="form-group" >
+                    <label class="col-sm-2 control-label">是否公开：</label>
+                    <div class="col-sm-3">
+                        <select class="form-control needUpload" name="publicity" lay-ignore>
+                            <% if (publicity) { %>
+                            <option selected value="true">公开</option>
+                            <option value="false">私密</option>
+                            <% } else if (!publicity) { %>
+                            <option value="true">公开</option>
+                            <option value="false" selected>私密</option>
+                            <% } %>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</script>
 <script>
+
+    var vo = {};
 
     layui.use(['laydate', 'laypage', 'layer', 'table', 'carousel', 'upload', 'element', 'slider','jquery'], function(){
         var laydate = layui.laydate //日期
@@ -70,12 +132,7 @@
             ,method: 'GET'
             ,page: true
             ,limit: 20
-            ,where: {
-                title : $("#title").val()
-                ,info: $("#info").val()
-                ,begin: $("#begin").val()
-                ,end: $("#end").val()
-            }
+            ,where: vo
             ,request: {
                 limitName: 'size'
             }
@@ -83,7 +140,10 @@
             ,title: '用户表'
             ,toolbar: '#toolbarDemo'
             ,parseData: function(res){
-                console.log(res);
+                vo.title =  res.filters.title;
+                vo.info =  res.filters.info;
+                vo.begin =  res.filters.begin;
+                vo.end =  res.filters.end;
                 return {
                     "code": 0, //解析接口状态
                     "msg": "", //解析提示文本
@@ -97,17 +157,22 @@
                     ,{title: '序号' ,width: 60 , align: 'center', templet: function(row){
                         return '<div>'+ ( row.LAY_INDEX ) +'</div>';
                     }}
-                    ,{field: 'title', title: '标题', edit: 'text'}
-                    ,{field: 'info', title: '副标题', edit: 'text'}
-                    ,{field: 'filename', title: '文件名', edit: 'text'}
-                    ,{field: 'createTime', title: '创建日期', templet: function (row) {
-                        return `<input id="date_` + row.id + `" class="layui-datetime" style="border-style:none;"
-                                            value="` + row.createTime + `" readonly />`;
+                    ,{field: 'title', title: '标题'}
+                    ,{field: 'info', title: '副标题'}
+                    ,{field: 'filename', title: '文件名'}
+                    ,{field: 'publicity', title: '是否公开',width: 120 ,templet: function (row) {
+                        return (row.publicity) ? '公开' : '私密';
                     }}
+                    ,{field: 'createTime', title: '创建日期'}
                     ,{fixed: 'right', align:'center', toolbar: '#barDemo'}
                 ]
             ]
-            ,done: function () {
+            ,done: function (res) {
+                $("#begin").val(vo.begin == null ? "" : vo.begin );
+                $("#end").val(vo.end == null ? "" : vo.end );
+                $("#title").val(vo.title == null ? "" : vo.title );
+                $("#info").val(vo.info == null ? "" : vo.info );
+
                 $(".layui-datetime").each(function(){
                     laydate.render({
                         elem: '#' + this.id
@@ -126,6 +191,7 @@
                     ,btns: ['now', 'confirm']
                     ,max: $("#end").val()
                     ,done: function(value, date){
+                        vo.begin = value;
                         end.config.min = {
                             year: date.year,
                             month: date.month - 1,
@@ -142,6 +208,7 @@
                     ,btns: ['now', 'confirm']
                     ,min: $("#begin").val()
                     ,done: function(value, date){
+                        vo.end = value;
                         begin.config.max = {
                             year: date.year,
                             month: date.month - 1,
@@ -163,35 +230,59 @@
                 layer.confirm('真的删除行么', function(index){
                     obj.del(); //删除对应行（tr）的DOM结构
                     layer.close(index);
-                    //向服务端发送删除指令
                 });
             } else if(layEvent === 'edit'){
-                layer.msg('编辑操作');
+                layer.open({
+                    type: 1
+                    ,title: '编辑'
+                    ,area: ['700px']
+                    ,btn: ['保存', '关闭']
+                    ,btnAlign: 'r'
+                    ,shade: 0.5
+                    ,yes: function(index, layero){
+                        var json = {};
+                        json.id = obj.data.id;
+                        $(".needUpload").each(function () {
+                            json[this.name] = this.value;
+                        });
+
+                        console.log(json);
+
+                        $.ajax({
+                            url: "/page/update"
+                            ,method: "POST"
+                            ,data: JSON.stringify(json)
+                            ,contentType: 'application/json'
+                            ,success: function (data) {
+
+                            }
+                        });
+
+                        obj.update(json);
+                        layer.close(index);
+                    }
+                    ,content: template('pageDetail',data)
+                });
             }
         });
 
         function reload() {
-            var title = $("#title").val();
-            var info = $("#info").val();
-            var begin = $("#begin").val();
-            var end = $("#end").val();
             table.reload('table',{
                 url: '/page/list'
-                ,where: {
-                    title : title
-                    ,info: info
-                    ,begin: begin
-                    ,end: end
-                }
+                ,where: vo
             });
-            $("#title").val(title);
-            $("#info").val(info);
-            $("#begin").val(begin);
-            $("#end").val(end);
         }
 
-        $(document).on('click','#aaaaa',function(){
+        $(document).on('click','#search',function(){
             reload();
+        });
+
+        $(document).on('change','#title',function(){
+            vo.title = this.value;
+        });
+
+        $(document).on('change','#info',function(){
+            vo.info = this.info;
         });
 
     });

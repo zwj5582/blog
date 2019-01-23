@@ -29,10 +29,9 @@
 
     <script type="text/javascript" src="/js/jquery.min.js"></script>
     <script type="text/javascript" src="/js/bootstrap.min.js"></script>
-
+    <script type="text/javascript" src="/js/template-web.js"></script>
+    <link rel="stylesheet" href="/layui/css/layui.css">
 </head>
-
-
 <body>
 
 <header class="site-header">
@@ -82,27 +81,12 @@
             <!-- Post List -->
             <div class="col-md-8">
 
-                <ol class="post-list" th:each="page : ${pageContents}">
-                    <li class="post-list-item">
-                        <h2 class="post-list-title">
-                            <a class="hvr-underline-from-center"
-                               th:href="'page/' + ${page.id} " th:text="${page.title}"></a>
-                        </h2>
-                        <p class="post-list-description" th:text="${page.info}">
-
-                        </p>
-                        <p class="post-list-meta">
-                            <span class="octicon octicon-calendar"></span>
-                            <span th:text="${#dates.format(page.createTime, 'yyyy-MM-dd')}"></span>
-                        </p>
-                    </li>
+                <ol class="post-list" id="pageList">
 
                 </ol>
 
-
                 <div class="pagination text-align">
                     <div class="btn-group">
-
 
                     </div>
                 </div>
@@ -128,8 +112,44 @@
     <!-- My JS -->
     <script type="text/javascript" src="js/script.js"></script>
 </footer>
+<script type="text/html" id="page_content">
+    <li class="post-list-item">
+        <h2 class="post-list-title" >
+            <a class="hvr-underline-from-center index_a" href="/page/<%=page.id%>" >
+                <%=page.title%>
+            </a>
+        </h2>
+        <p class="post-list-description">
+            <%=page.info%>
+        </p>
+        <p class="post-list-meta">
+            <span class="octicon octicon-calendar"></span>
+            <span>
+                <%=page.createTime%>
+            </span>
+        </p>
+    </li>
+</script>
+<script src="/layui/layui.js"></script>
+<script>
+    
+    layui.use('flow', function() {
+        var flow = layui.flow;
+        flow.load({
+            elem: '#pageList'
+            ,isAuto: false
+            ,done: function(pageNum, next){
+                var pages = [];
+                $.get('/page/toList?page='+pageNum, function(data){
+                    layui.each(data.content, function(index, item){
+                        pages.push(template('page_content',{ page: item }));
+                    });
+                    next(pages.join(''), pageNum < data.totalPages);
+                });
+            }
+        });
+    });
 
-
+</script>
 </body>
-
 </html>
