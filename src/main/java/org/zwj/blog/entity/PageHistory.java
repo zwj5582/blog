@@ -1,32 +1,28 @@
 /*
- *  Created by ZhongWenjie on 2019-01-05 22:40
+ *  Created by ZhongWenjie on 2019-01-26 11:17
  */
 
 package org.zwj.blog.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "page_content")
+@Table(name = "page_history")
 @Data
-public class PageContent implements Serializable {
+public class PageHistory implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String type = "page";
+    private Integer pageId;
 
-    private String title;
-
-    private String info;
+    private Integer version;
 
     private String htmlLocation;
 
@@ -34,17 +30,10 @@ public class PageContent implements Serializable {
 
     private String filename;
 
-    private Boolean publicity;
-
-    private Integer historyId;
-
     @Temporal(TemporalType.TIMESTAMP)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone="GMT+8")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
-    @Transient private String createTimeStr;
-
-    @Transient private MultipartFile file;
+    private Boolean curr;
 
 }

@@ -25,9 +25,8 @@ public class AdminController {
 
     @Autowired private PageContentService pageContentService;
 
-    @RequestMapping("/doUpload")
+    @RequestMapping(value = "/doUpload")
     public String upload(PageContent page) throws Exception {
-        page = PageContent.create(page);
         String uuid = Util.randomUUIDToString();
         String baseDir = FilenameUtils.concat(location, uuid);
         String originalFileAbsolutePath = FileUtils.saveFile(page.getFile(), baseDir, false);

@@ -19,18 +19,17 @@ import org.zwj.blog.service.PageContentService;
 import org.zwj.blog.vo.PageContentVO;
 
 @Controller
-@RequestMapping("/page")
 public class PageController {
 
     @Autowired private PageContentService pageContentService;
 
-    @RequestMapping(value = "{id}")
+    @RequestMapping(value = "/page{id}")
     public String page(@PathVariable(value = "id") Integer id, Model model) {
         model.addAttribute("page", pageContentService.findById(id));
         return "page";
     }
 
-    @GetMapping(value = "/toList")
+    @GetMapping(value = "/page/toList")
     public @ResponseBody ResponseEntity toList(
             @PageableDefault(
                             size = 7,
@@ -45,7 +44,7 @@ public class PageController {
     }
 
     @PostMapping(
-            value = "/update",
+            value = "/page/update",
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public @ResponseBody ResponseEntity update(@RequestBody PageContent pageContent) throws Exception {
@@ -53,7 +52,7 @@ public class PageController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(value = "/list")
+    @GetMapping(value = "/page/list")
     public @ResponseBody ResponseEntity list(
             @PageableDefault(
                             size = 20,
@@ -69,4 +68,9 @@ public class PageController {
                                 pageable.getSort())),
                 pageContentVO);
     }
+
+    public @ResponseBody ResponseEntity pageHistoryList(){
+        return null;
+    }
+
 }

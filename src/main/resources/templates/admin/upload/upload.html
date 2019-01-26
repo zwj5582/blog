@@ -9,11 +9,11 @@
     <link rel="bookmark" href="/images/favicon.ico"/>
     <title>Title</title>
     <link rel="stylesheet" href="/style/bootstrap.min.css">
-    <link rel="stylesheet" href="/style/fileinput.min.css">
     <script type="text/javascript" src="/js/jquery.min.js"></script>
     <script type="text/javascript" src="/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="/js/fileinput.min.js"></script>
     <script type="text/javascript" src="/js/template-web.js"></script>
+    <script type="text/javascript" src="/js/jquery.form.min.js"></script>
+    <script type="text/javascript" src="/js/moment.min.js"></script>
     <link rel="stylesheet" href="/layui/css/layui.css">
 </head>
 <body>
@@ -21,9 +21,11 @@
 </body>
 <script src="/layui/layui.js"></script>
 <script type="text/html" id="barDemo">
-    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="upload">上传</a>
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="download">下载</a>
     <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
-    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="show">查看</a>
+    <a class="layui-btn layui-btn-warm layui-btn-xs" lay-event="history">查看</a>
 </script>
 <script type="text/html" id="toolbarDemo">
     <form class="form-inline">
@@ -63,7 +65,7 @@
 <script type="text/html" id="pageDetail">
     <div class="container-fluid" style="margin-top: 10px">
         <div class="col-sm-12">
-            <form class="form-horizontal" target="_parent" action="/admin/doUpload" method="post" enctype="multipart/form-data">
+            <form id="form" class="form-horizontal" action="/admin/doUpload" method="post" enctype="multipart/form-data">
                 <div class="form-group">
                     <label class="col-sm-2 control-label">标题：</label>
                     <div class="col-sm-9">
@@ -105,8 +107,22 @@
                         </select>
                     </div>
                 </div>
+                <% if (!onFile) { %>
+                <div class="form-group">
+                    <div class="col-sm-5">
+                        <button type="button" class="layui-btn" id="fileBtn">
+                            <i class="layui-icon">&#xe67c;</i>上传文件
+                        </button>
+                    </div>
+                </div>
+                <% } %>
             </form>
         </div>
+    </div>
+</script>
+<script type="text/html" id="_add">
+    <div id="addButton" class="layui-inline" title="添加">
+        <i class="layui-icon layui-icon-add-circle"></i>
     </div>
 </script>
 <script>
@@ -126,7 +142,7 @@
             id: 'table'
             ,elem: '#demo'
             ,url: '/page/list'
-            ,method: 'GET'
+            ,type: 'GET'
             ,page: true
             ,limit: 20
             ,where: vo
@@ -162,10 +178,14 @@
                         return `<span id="publicity_` + row.id + `">` + ( (row.publicity) ? `公开` : `私密` ) + `</span>`;
                     }}
                     ,{field: 'createTime', title: '创建日期'}
-                    ,{fixed: 'right', align:'center', toolbar: '#barDemo'}
+                    ,{fixed: 'right' ,align:'center', toolbar: '#barDemo'}
                 ]
             ]
             ,done: function (res) {
+                $(".layui-table-tool-self").each(function () {
+                   $(this).prepend($("#_add").html());
+                });
+
                 $("#begin").val(vo.begin == null ? "" : vo.begin );
                 $("#end").val(vo.end == null ? "" : vo.end );
                 $("#title").val(vo.title == null ? "" : vo.title );
@@ -222,15 +242,16 @@
         //监听行工具事件
         table.on('tool(test)', function(obj){ //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
             var data = obj.data //获得当前行数据
-                ,layEvent = obj.event; //获得 lay-event 对应的值
-            if(layEvent === 'detail'){
-                layer.msg('查看操作');
+                ,layEvent = obj.event;
+            if(layEvent === 'upload'){
+                data.noFile = false;
             } else if(layEvent === 'del'){
                 layer.confirm('真的删除行么', function(index){
-                    obj.del(); //删除对应行（tr）的DOM结构
+                    obj.del();
                     layer.close(index);
                 });
             } else if(layEvent === 'edit'){
+                data.noFile = true;
                 layer.open({
                     type: 1
                     ,title: '编辑'
@@ -250,7 +271,7 @@
                         index = layer.load(1);
                         $.ajax({
                             url: "/page/update"
-                            ,method: "POST"
+                            ,type: "POST"
                             ,data: JSON.stringify(json)
                             ,contentType: 'application/json'
                             ,success: function (data) {
@@ -301,6 +322,77 @@
         $(document).on('change','#publicity',function(){
             vo.publicity = this.value;
         });
+
+        $(document).on('click','#addButton', function(){
+            var data = {};
+            data.noFile = false;
+            data.publicity = true;
+            data.createTime = moment().format("YYYY-MM-DD HH:mm:ss");
+            layer.open({
+                type: 1
+                ,title: '编辑'
+                ,area: ['700px']
+                ,btn: ['添加', '关闭']
+                ,btnAlign: 'r'
+                ,shade: 0.5
+                ,yes: function(index, layero){
+                    layer.close(index);
+                    index = layer.load(1);
+
+                    var dataF = new FormData();
+                    $(".needUpload").each(function () {
+                        dataF.append(this.name,this.value);
+                    });
+
+                    dataF.append('file',document.getElementsByName('file').item(0).files[0]);
+                    $.ajax({
+                        url: "/admin/doUpload"
+                        ,type: "POST"
+                        ,data: dataF
+                        ,contentType: false
+                        ,processData: false
+                        ,success: function (data) {
+                            table.reload('table',{
+                                url: '/page/list'
+                                ,where: vo
+                            });
+                            layer.close(index);
+                        }
+                    });
+                }
+                ,success: function(layero, index){
+                    laydate.render({
+                        elem: '#createTime'
+                        ,type: 'datetime'
+                        ,value: data.createTime
+                        ,calendar: true
+                        ,btns: ['now', 'confirm']
+                    });
+                    upload.render({
+                        elem: '#fileBtn'
+                        ,auto: false
+                        ,exts: 'zip|rar|html'
+                        ,field: 'file'
+                        ,choose: function(obj){
+                            obj.preview(function(index, file, result){
+                                var extensionName = getFileExtension(file.name);
+                                if (extensionName === 'html')
+                                    obj.resetFile(index, file, 'root.html');
+                                else if (extensionName === 'zip')
+                                    obj.resetFile(index, file, 'root.zip');
+                                else if (extensionName === 'rar')
+                                    obj.resetFile(index, file, 'root.rar');
+                            });
+                        }
+                    });
+                }
+                ,content: template('pageDetail',data)
+            });
+        });
+
+        function getFileExtension(filename) {
+            return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2);
+        }
 
     });
 

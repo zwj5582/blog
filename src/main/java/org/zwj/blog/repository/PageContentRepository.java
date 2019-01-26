@@ -10,7 +10,4 @@ import org.zwj.blog.entity.PageContent;
 
 public interface PageContentRepository extends JpaRepository<PageContent, Integer>, JpaSpecificationExecutor<PageContent> {
 
-//    @Query(value = "SELECT model FROM PageContent model WHERE model.createTime like CONCAT('%',:#{#page.title},'%')")
-//    Page<PageContent> findByConditionAndPageable(@Param(value = "page") PageContentVO pageContentVO, Pageable pageable);
-
 }
