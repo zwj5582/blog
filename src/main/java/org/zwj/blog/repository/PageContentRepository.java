@@ -7,6 +7,7 @@ package org.zwj.blog.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.zwj.blog.entity.PageContent;
+import org.zwj.blog.entity.PageHistory;
 
 public interface PageContentRepository extends JpaRepository<PageContent, Integer>, JpaSpecificationExecutor<PageContent> {
 

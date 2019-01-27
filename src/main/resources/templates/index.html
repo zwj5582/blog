@@ -140,7 +140,7 @@
             ,isAuto: false
             ,done: function(pageNum, next){
                 var pages = [];
-                $.get('/page/toList?page='+pageNum, function(data){
+                $.get('/page/list?page='+pageNum, function(data){
                     layui.each(data.content, function(index, item){
                         pages.push(template('page_content',{ page: item }));
                     });

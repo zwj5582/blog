@@ -6,6 +6,7 @@ package org.zwj.blog.utils;
 
 import com.google.common.collect.Lists;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
@@ -18,7 +19,7 @@ public class BeanUtils {
     public static void copyProperties(
             Object source,
             Object target,
-            Function<Object, Boolean> ignoreFunction,
+            @Nullable Function<Object, Boolean> ignoreFunction,
             String... otherIgnoreProperties) throws IllegalAccessException {
 
         List<String> ignoreProperties = Lists.newArrayList();
@@ -36,7 +37,7 @@ public class BeanUtils {
             }
             if (!Util.valid(targetField)) continue;
             field.setAccessible(true);
-            if ( !ignoreFunction.apply(field.get(source)) )
+            if ( Util.valid(ignoreFunction) && !ignoreFunction.apply(field.get(source)) )
                 ignoreProperties.add(field.getName());
         }
         org.springframework.beans.BeanUtils.copyProperties(source,target,ignoreProperties.toArray(new String[0]));
@@ -45,7 +46,7 @@ public class BeanUtils {
     public static void copyProperties(
             Object source,
             Object target,
-            Function<Object, Boolean> ignoreFunction,
+            @Nullable Function<Object, Boolean> ignoreFunction,
             String[] notIgnoreProperties,
             String[] otherIgnoreProperties) throws IllegalAccessException {
 
@@ -64,7 +65,7 @@ public class BeanUtils {
             }
             if (!Util.valid(targetField)) continue;
             field.setAccessible(true);
-            if ( !ignoreFunction.apply(field.get(source)) )
+            if ( Util.valid(ignoreFunction) && !ignoreFunction.apply(field.get(source)) )
                 ignoreProperties.add(field.getName());
         }
 

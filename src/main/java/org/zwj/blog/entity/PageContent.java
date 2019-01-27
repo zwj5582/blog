@@ -38,12 +38,12 @@ public class PageContent implements Serializable {
 
     private Integer historyId;
 
+    private Long versionNum = 1L;
+
     @Temporal(TemporalType.TIMESTAMP)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone="GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
-
-    @Transient private String createTimeStr;
 
     @Transient private MultipartFile file;
 

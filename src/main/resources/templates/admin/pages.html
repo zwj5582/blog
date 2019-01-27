@@ -22,10 +22,12 @@
 <script src="/layui/layui.js"></script>
 <script type="text/html" id="barDemo">
     <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="upload">上传</a>
+    <button class="uploadBtn" style="display: none"></button>
+    <input id="rowCurrId" type="hidden">
     <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="download">下载</a>
     <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
     <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="show">查看</a>
-    <a class="layui-btn layui-btn-warm layui-btn-xs" lay-event="history">查看</a>
+    <a class="layui-btn layui-btn-warm layui-btn-xs" lay-event="version">版本</a>
 </script>
 <script type="text/html" id="toolbarDemo">
     <form class="form-inline">
@@ -65,7 +67,7 @@
 <script type="text/html" id="pageDetail">
     <div class="container-fluid" style="margin-top: 10px">
         <div class="col-sm-12">
-            <form id="form" class="form-horizontal" action="/admin/doUpload" method="post" enctype="multipart/form-data">
+            <form id="form" class="form-horizontal" action="/admin/page/doUpload" method="post" enctype="multipart/form-data">
                 <div class="form-group">
                     <label class="col-sm-2 control-label">标题：</label>
                     <div class="col-sm-9">
@@ -107,8 +109,9 @@
                         </select>
                     </div>
                 </div>
-                <% if (!onFile) { %>
+                <% if (!noFile) { %>
                 <div class="form-group">
+                    <label class="col-sm-2 control-label">文件：</label>
                     <div class="col-sm-5">
                         <button type="button" class="layui-btn" id="fileBtn">
                             <i class="layui-icon">&#xe67c;</i>上传文件
@@ -141,7 +144,7 @@
         table.render({
             id: 'table'
             ,elem: '#demo'
-            ,url: '/page/list'
+            ,url: '/admin/page/list'
             ,type: 'GET'
             ,page: true
             ,limit: 20
@@ -167,25 +170,29 @@
             }
             ,cols: [
                 [
-                    {field: 'id', title: 'ID', hide: true}
+                    {field: 'id', title: 'ID', hide: true, templet: function(row){
+                        return '<div id="row_' + row.id + '" >' + row.id + '</div>';
+                    }}
                     ,{title: '序号' ,width: 60 , align: 'center', templet: function(row){
                         return '<div>'+ ( row.LAY_INDEX ) +'</div>';
                     }}
                     ,{field: 'title', title: '标题'}
-                    ,{field: 'info', title: '副标题'}
+                    ,{field: 'info', title: '副标题', hide: true}
                     ,{field: 'filename', title: '文件名'}
                     ,{field: 'publicity', title: '是否公开',width: 120 ,templet: function (row) {
                         return `<span id="publicity_` + row.id + `">` + ( (row.publicity) ? `公开` : `私密` ) + `</span>`;
                     }}
                     ,{field: 'createTime', title: '创建日期'}
+                    ,{field: 'versionNum', title: '版本号',templet: function (row) {
+                        return `<div id="version_` + row.id + `" >` + row.versionNum + `</div>`;
+                    }}
                     ,{fixed: 'right' ,align:'center', toolbar: '#barDemo'}
                 ]
             ]
             ,done: function (res) {
-                $(".layui-table-tool-self").each(function () {
-                   $(this).prepend($("#_add").html());
-                });
-
+                if ($(".layui-table-tool-self:first>div:first").attr("id") !== 'addButton') {
+                    $(".layui-table-tool-self:first").prepend($("#_add").html());
+                }
                 $("#begin").val(vo.begin == null ? "" : vo.begin );
                 $("#end").val(vo.end == null ? "" : vo.end );
                 $("#title").val(vo.title == null ? "" : vo.title );
@@ -236,6 +243,36 @@
 
                     }
                 });
+
+                $(".uploadBtn").each(function () {
+                    upload.render({
+                        elem: this
+                        ,url: '/admin/file/upload'
+                        ,data: {
+                            id: function () {
+                                return parseInt($("#rowCurrId").val());
+                            }
+                        }
+                        ,exts: 'zip|rar|html'
+                        ,field: 'file'
+                        ,number: 1
+                        ,before: function(obj){
+                            layer.load();
+                        }
+                        ,done: function(res, index, upload){
+                            $("#version_" + $("#rowCurrId").val()).text(res.version);
+                            layer.closeAll('loading');
+                            layer.msg("文件更新成功，最新版本：" + res.version, {
+                                icon: 1,
+                                time: 2000
+                            });
+                        }
+                        ,error: function(index, upload){
+                            layer.closeAll('loading');
+                            layer.msg("文件更新失败请重试！");
+                        }
+                    });
+                });
             }
         });
 
@@ -244,7 +281,9 @@
             var data = obj.data //获得当前行数据
                 ,layEvent = obj.event;
             if(layEvent === 'upload'){
-                data.noFile = false;
+                $("#rowCurrId").val(data.id);
+                console.log("00000",$(this).next('button'));
+                $(this).next('button').trigger("click");
             } else if(layEvent === 'del'){
                 layer.confirm('真的删除行么', function(index){
                     obj.del();
@@ -270,7 +309,7 @@
                         layer.close(index);
                         index = layer.load(1);
                         $.ajax({
-                            url: "/page/update"
+                            url: "/admin/page/update"
                             ,type: "POST"
                             ,data: JSON.stringify(json)
                             ,contentType: 'application/json'
@@ -302,7 +341,7 @@
 
         function reload() {
             table.reload('table',{
-                url: '/page/list'
+                url: '/admin/page/list'
                 ,where: vo
             });
         }
@@ -338,22 +377,20 @@
                 ,yes: function(index, layero){
                     layer.close(index);
                     index = layer.load(1);
-
-                    var dataF = new FormData();
+                    var dataForm = new FormData();
                     $(".needUpload").each(function () {
-                        dataF.append(this.name,this.value);
+                        dataForm.append(this.name,this.value);
                     });
-
-                    dataF.append('file',document.getElementsByName('file').item(0).files[0]);
+                    dataForm.append('file',$("input[type='file']:first")[0].files[0]);
                     $.ajax({
-                        url: "/admin/doUpload"
+                        url: "/admin/page/doUpload"
                         ,type: "POST"
-                        ,data: dataF
+                        ,data: dataForm
                         ,contentType: false
                         ,processData: false
                         ,success: function (data) {
                             table.reload('table',{
-                                url: '/page/list'
+                                url: 'admin/page/list'
                                 ,where: vo
                             });
                             layer.close(index);
@@ -373,17 +410,6 @@
                         ,auto: false
                         ,exts: 'zip|rar|html'
                         ,field: 'file'
-                        ,choose: function(obj){
-                            obj.preview(function(index, file, result){
-                                var extensionName = getFileExtension(file.name);
-                                if (extensionName === 'html')
-                                    obj.resetFile(index, file, 'root.html');
-                                else if (extensionName === 'zip')
-                                    obj.resetFile(index, file, 'root.zip');
-                                else if (extensionName === 'rar')
-                                    obj.resetFile(index, file, 'root.rar');
-                            });
-                        }
                     });
                 }
                 ,content: template('pageDetail',data)
