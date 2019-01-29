@@ -47,4 +47,6 @@ public class PageContent implements Serializable {
 
     @Transient private MultipartFile file;
 
+    private String mdContent;
+
 }

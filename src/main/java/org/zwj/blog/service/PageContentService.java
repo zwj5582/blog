@@ -51,6 +51,10 @@ public class PageContentService {
         pageContent.setHistoryId(currPageHistory.getVersion());
     }
 
+    public void saveContent(PageContent page) {
+        pageContentRepository.save(page);
+    }
+
     public PageHistory updateWithFile(PageContent pageContent) throws Exception {
         PageContent dbPageContent = pageContentRepository
                 .findById(pageContent.getId())
@@ -127,7 +131,7 @@ public class PageContentService {
     }
 
     public Page<PageContent> findByPage(Pageable pageable) {
-        return pageContentRepository.findAll(pageable);
+        return pageContentRepository.findAllByPublicityIsTrue(pageable);
     }
 
     public void update(PageContent pageContent) throws Exception {

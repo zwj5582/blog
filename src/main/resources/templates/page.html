@@ -61,7 +61,7 @@
         </div>
     </section>
     <article class="post container article_width">
-        <iframe th:src="'/data/' + ${page.htmlLocation}"
+        <iframe th:if="${page.type == 'page'}" th:src="'/data/' + ${page.htmlLocation}"
                 scrolling="no" frameborder="0" width="100%" onload="setIframeHeight(this)"
         ></iframe>
     </article>

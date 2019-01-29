@@ -112,7 +112,13 @@
                 <% if (!noFile) { %>
                 <div class="form-group">
                     <label class="col-sm-2 control-label">文件：</label>
-                    <div class="col-sm-5">
+                    <div class="col-sm-10">
+                        <label class="radio-inline">
+                            <input type="radio" name="type" checked value="page"> 上传
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="type" value="md"> Markdown
+                        </label>
                         <button type="button" class="layui-btn" id="fileBtn">
                             <i class="layui-icon">&#xe67c;</i>上传文件
                         </button>
@@ -183,7 +189,7 @@
                         return `<span id="publicity_` + row.id + `">` + ( (row.publicity) ? `公开` : `私密` ) + `</span>`;
                     }}
                     ,{field: 'createTime', title: '创建日期'}
-                    ,{field: 'versionNum', title: '版本号',templet: function (row) {
+                    ,{field: 'versionNum', title: '版本号',width: 100,templet: function (row) {
                         return `<div id="version_` + row.id + `" >` + row.versionNum + `</div>`;
                     }}
                     ,{fixed: 'right' ,align:'center', toolbar: '#barDemo'}
@@ -282,7 +288,6 @@
                 ,layEvent = obj.event;
             if(layEvent === 'upload'){
                 $("#rowCurrId").val(data.id);
-                console.log("00000",$(this).next('button'));
                 $(this).next('button').trigger("click");
             } else if(layEvent === 'del'){
                 layer.confirm('真的删除行么', function(index){
@@ -381,7 +386,11 @@
                     $(".needUpload").each(function () {
                         dataForm.append(this.name,this.value);
                     });
-                    dataForm.append('file',$("input[type='file']:first")[0].files[0]);
+                    if (typeof($("input[type='file']:first")[0].files[0]) !== "undefined"){
+                        dataForm.append('file',$("input[type='file']:first")[0].files[0]);
+                    }
+                    var type = $("input[name='type']:checked").val();
+                    dataForm.append('type',type);
                     $.ajax({
                         url: "/admin/page/doUpload"
                         ,type: "POST"
@@ -396,6 +405,9 @@
                             layer.close(index);
                         }
                     });
+                    if (type === 'md'){
+                        window.open("/admin/page/md/edit/0");
+                    }
                 }
                 ,success: function(layero, index){
                     laydate.render({
@@ -414,6 +426,15 @@
                 }
                 ,content: template('pageDetail',data)
             });
+
+            $("input[type='radio'][name='type']").change(function () {
+                if (this.value === 'page') {
+                    $("#fileBtn").show();
+                }else {
+                    $("#fileBtn").hide();
+                }
+            });
+
         });
 
         function getFileExtension(filename) {

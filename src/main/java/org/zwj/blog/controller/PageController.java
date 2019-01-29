@@ -16,19 +16,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.zwj.blog.common.ResponseEntitys;
 import org.zwj.blog.entity.PageContent;
-import org.zwj.blog.entity.PageHistory;
 import org.zwj.blog.service.PageContentService;
 import org.zwj.blog.utils.FileUtils;
 import org.zwj.blog.utils.Util;
 import org.zwj.blog.vo.PageContentVO;
 
-import javax.transaction.NotSupportedException;
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 
 @Controller
 public class PageController {
@@ -86,14 +81,22 @@ public class PageController {
 
     @RequestMapping(value = "/admin/page/doUpload")
     public @ResponseBody ResponseEntity upload(PageContent page) throws Exception {
-        String uuid = Util.randomUUIDToString();
-        String baseDir = FilenameUtils.concat(location, uuid);
-        String originalFileAbsolutePath = FileUtils.saveFile(page.getFile(), baseDir, false);
-        page.setOriginalLocation(FileUtils.toRelativelyPathWithUnix(location,originalFileAbsolutePath));
-        File html = FileUtils.findFileFirstOrLikeFirst(baseDir, "root.html", "html");
-        page.setHtmlLocation(FileUtils.toRelativelyPathWithUnix(location, html.getAbsolutePath()));
-        pageContentService.savePageContent(page);
+        if ("page".equals(page.getType())) {
+            String uuid = Util.randomUUIDToString();
+            String baseDir = FilenameUtils.concat(location, uuid);
+            String originalFileAbsolutePath = FileUtils.saveFile(page.getFile(), baseDir, false);
+            page.setOriginalLocation(FileUtils.toRelativelyPathWithUnix(location,originalFileAbsolutePath));
+            File html = FileUtils.findFileFirstOrLikeFirst(baseDir, "root.html", "html");
+            page.setHtmlLocation(FileUtils.toRelativelyPathWithUnix(location, html.getAbsolutePath()));
+            pageContentService.savePageContent(page);
+        }else
+            pageContentService.saveContent(page);
         return ResponseEntity.ok().build();
+    }
+
+    @RequestMapping(value = "/admin/page/md/edit/{id}")
+    public String mdEdit(@PathVariable(value = "id") Integer id) {
+        return "admin/mdEdit";
     }
 
     @RequestMapping(value = "/admin/file/upload")
@@ -104,9 +107,9 @@ public class PageController {
         page.setOriginalLocation(FileUtils.toRelativelyPathWithUnix(location,originalFileAbsolutePath));
         File html = FileUtils.findFileFirstOrLikeFirst(baseDir, "root.html", "html");
         page.setHtmlLocation(FileUtils.toRelativelyPathWithUnix(location, html.getAbsolutePath()));
-        final PageHistory currPageHistory = pageContentService.updateWithFile(page);
+        pageContentService.updateWithFile(page);
         return ResponseEntity.ok(
-                ImmutableMap.of("version", currPageHistory.getVersionNum())
+                ImmutableMap.of("version", 0)
         );
     }
 
