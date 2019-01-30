@@ -28,6 +28,9 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Controller
 public class PageController {
@@ -127,8 +130,8 @@ public class PageController {
     }
 
     @RequestMapping(value = "/admin/upload/md/img")
-    public @ResponseBody ResponseEntity saveImage(@RequestParam(value = "editormd-image-file") MultipartFile file)
-            throws IOException {
+    public @ResponseBody ResponseEntity saveImage(
+            @RequestParam(value = "editormd-image-file") MultipartFile file) throws IOException {
         String suffixPath =
                 "images/"
                         + Util.randomUUIDToString()
@@ -139,6 +142,31 @@ public class PageController {
         final String httpServerHost = (String) servletContext.getAttribute("httpServerHost");
         return ResponseEntity.ok(
                 ImmutableMap.of(
-                        "success", 1, "message", "上传成功", "url", httpServerHost + "/data/" + suffixPath));
+                        "success",
+                        1,
+                        "message",
+                        "上传成功",
+                        "url",
+                        httpServerHost + "/data/" + suffixPath));
+    }
+
+    @RequestMapping(value = "/admin/upload/images")
+    public @ResponseBody ResponseEntity fetchAllUploadImg() {
+        Collection<File> images =
+                FileUtils.listFiles(
+                        new File(FilenameUtils.concat(location, "images")),
+                        "jpg",
+                        "jpeg",
+                        "gif",
+                        "png",
+                        "bmp",
+                        "webp");
+        if (Util.valid(images)) {
+            return ResponseEntity.ok(
+                    images.stream()
+                            .map(file -> FilenameUtils.getName(file.getAbsolutePath()))
+                            .collect(Collectors.toList()));
+        }
+        return ResponseEntity.ok().build();
     }
 }

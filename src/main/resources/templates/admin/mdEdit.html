@@ -10,8 +10,47 @@
     <title>Title</title>
     <link rel="stylesheet" href="/editor/lib/codemirror/theme/sspai.css">
     <link rel="stylesheet" href="/editor/css/editormd.css">
+    <link rel="stylesheet" href="/style/bootstrap.min.css">
+    <link rel="stylesheet" href="/layui/css/layui.css">
     <script type="text/javascript" src="/editor/examples/js/jquery.min.js"></script>
     <script type="text/javascript" src="/editor/editormd.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/js/template-web.js"></script>
+    <script src="/layui/layui.js"></script>
+    <style>
+        .markdown-body img {
+            max-width:600px;
+            height:auto;
+        }
+
+        .box img{
+            border:1px solid #F0F0E8;background-color:#FFF;padding:6px;
+        }
+
+      #test{
+          width: 200px;
+          height: 80px;
+          background: grey;
+          position: relative;
+      }
+
+        .ppp:after {
+            display: ;
+            display: inline-block;
+            content: '√';
+            color: #fff;
+            width: 0;
+            height: 0;
+            border-top: 20px solid transparent;
+            border-left: 20px solid transparent;
+            border-right: 20px solid orange;
+            border-bottom: 20px solid orange;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+        }
+
+    </style>
 </head>
 <body>
 <div id="my-editormd" >
@@ -21,6 +60,19 @@
 </body>
 <script type="text/javascript">
     var myEditor;
+
+    var ilay = layui.use(['laydate', 'laypage', 'layer', 'table', 'carousel', 'upload', 'element', 'slider','jquery','flow'], function() {
+        var laydate = layui.laydate //日期
+            , laypage = layui.laypage //分页
+            , layer = layui.layer //弹层
+            , table = layui.table //表格
+            , upload = layui.upload //上传
+            , element = layui.element //元素操作
+            , $ = layui.$
+            , flow = layui.flow;
+
+    });
+
 
     $(function() {
         myEditor = editormd("my-editormd", {
@@ -50,14 +102,14 @@
             imageFormats : ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
             imageUploadURL : "/admin/upload/md/img",//图片上传地址
 
-                /*
-                 上传的后台只需要返回一个 JSON 数据，结构如下：
-                 {
-                    success : 0 | 1,           // 0 表示上传失败，1 表示上传成功
-                    message : "提示的信息，上传成功或上传失败及错误信息等。",
-                    url     : "图片地址"        // 上传成功时才返回
-                 }
-                 */
+            /*
+             上传的后台只需要返回一个 JSON 数据，结构如下：
+             {
+                success : 0 | 1,           // 0 表示上传失败，1 表示上传成功
+                message : "提示的信息，上传成功或上传失败及错误信息等。",
+                url     : "图片地址"        // 上传成功时才返回
+             }
+             */
 
             /**设置主题颜色*/
             /*editorTheme: 'sspai',
@@ -66,5 +118,49 @@
         });
 
     });
+
+    function doShow() {
+        var images = {};
+        $.get('/admin/upload/images', function(data){
+            images = data;
+            var arr = [];
+            var curr;
+            for (var i = 0; i < images.length; i++){
+                if ( i%12 === 0 ) {
+                    curr = [];
+                    arr.push(curr);
+                }
+                curr.push(`<img src="/data/images/` + images[i] + `" class="ppp" style="max-width: 200px;margin: 5px">`);
+            }
+
+            console.log(arr);
+
+
+            ilay.layer.open({
+                type: 1
+                ,title: '编辑'
+                ,area: ['860px','700px']
+                ,btn: ['保存', '关闭']
+                ,btnAlign: 'r'
+                ,shade: 0.5
+                ,yes: function(index, layero){
+
+                }
+                ,success: function(layero, index){
+                    ilay.flow.load({
+                        elem: '#LAY_demo3'
+                        ,isAuto: true
+                        ,scrollElem: '#LAY_demo3'
+                        ,done: function(pageNum, next){
+                            console.log(pageNum);
+                            next(arr[pageNum-1].join(""), pageNum < arr.length);
+                        }
+                    });
+                }
+                ,content: `<div class="site-demo-flow box" id="LAY_demo3"></div>`
+            });
+        });
+    }
+
 </script>
 </html>
