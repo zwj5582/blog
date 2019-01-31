@@ -23,31 +23,49 @@
             height:auto;
         }
 
-        .box img{
-            border:1px solid #F0F0E8;background-color:#FFF;padding:6px;
+        .img {
+            max-width: 200px;
+            margin: 5px;
+            border:1px solid #F0F0E8;
+            background-color:#FFF;
+            padding:6px;
         }
 
-      #test{
-          width: 200px;
-          height: 80px;
-          background: grey;
-          position: relative;
-      }
+        .img:hover {
+            border:2px solid #a7abb1;
+            text-decoration: none;
+        }
 
-        .ppp:after {
-            display: ;
+        .imgDiv {
             display: inline-block;
-            content: '√';
-            color: #fff;
-            width: 0;
-            height: 0;
-            border-top: 20px solid transparent;
-            border-left: 20px solid transparent;
-            border-right: 20px solid orange;
-            border-bottom: 20px solid orange;
+            position: relative;
+        }
+
+        .delete {
             position: absolute;
-            bottom: 0;
-            right: 0;
+            top: -0px;
+            right: -0px;
+            width: 20px;
+            height: 20px;
+            opacity: 0.0;
+        }
+
+        .show {
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            width: 20px;
+            height: 20px;
+            opacity: 1.0;
+        }
+
+        .choose {
+            position: absolute;
+            bottom: -5px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            opacity: 1.0;
         }
 
     </style>
@@ -101,6 +119,23 @@
             imageUpload : true,//开启本地图片上传
             imageFormats : ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
             imageUploadURL : "/admin/upload/md/img",//图片上传地址
+            toolbarIcons: [
+                "undo", "redo", "|",
+                "bold", "del", "italic", "quote", "ucwords", "uppercase", "lowercase", "|",
+                "h1", "h2", "h3", "h4", "h5", "h6", "|",
+                "list-ul", "list-ol", "hr", "|",
+                "link", "reference-link", "image", "showImages" ,"code", "preformatted-text", "code-block", "table", "datetime", "emoji", "html-entities", "pagebreak", "|",
+                "goto-line", "watch", "preview", "fullscreen", "clear", "search", "|",
+                "help", "info"
+            ],
+            toolbarIconsClass: {
+                showImages: "fa-folder-open"
+            },
+            toolbarHandlers: {
+                showImages : function(cm, icon, cursor, selection) {
+                    doShow();
+                }
+            },
 
             /*
              上传的后台只需要返回一个 JSON 数据，结构如下：
@@ -126,20 +161,26 @@
             var arr = [];
             var curr;
             for (var i = 0; i < images.length; i++){
-                if ( i%12 === 0 ) {
+                if ( i%16 === 0 ) {
                     curr = [];
                     arr.push(curr);
                 }
-                curr.push(`<img src="/data/images/` + images[i] + `" class="ppp" style="max-width: 200px;margin: 5px">`);
+                curr.push(
+                    `<div class="imgDiv">
+                        <img src="/data/images/` + images[i] + `" class="img">
+                        <a href="javascript:void(0);" class="deleteHref">
+                            <img src="/images/delete.png" class="deleteImg delete" />
+                        </a>
+                        <a href="javascript:void(0);">
+                            <img src="/images/finish.png" class="choose" />
+                        </a>
+                    </div>`
+                );
             }
-
-            console.log(arr);
-
-
             ilay.layer.open({
                 type: 1
-                ,title: '编辑'
-                ,area: ['860px','700px']
+                ,title: '图片浏览'
+                ,area: ['870px','720px']
                 ,btn: ['保存', '关闭']
                 ,btnAlign: 'r'
                 ,shade: 0.5
@@ -152,8 +193,15 @@
                         ,isAuto: true
                         ,scrollElem: '#LAY_demo3'
                         ,done: function(pageNum, next){
-                            console.log(pageNum);
                             next(arr[pageNum-1].join(""), pageNum < arr.length);
+                            var $deleteHref = $(".deleteHref");
+                            $deleteHref.mouseenter(function () {
+                                $(this).find(".deleteImg").attr("class","deleteImg show");
+
+                            });
+                            $deleteHref.mouseleave(function () {
+                                $(this).find(".deleteImg").attr("class","deleteImg delete");
+                            });
                         }
                     });
                 }
