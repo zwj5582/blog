@@ -5,6 +5,7 @@
 package org.zwj.blog.controller;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +29,11 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,6 +42,24 @@ public class PageController {
 
     @Value("${html.content.location}")
     private String location;
+
+    private static List<String> imagesEx = Lists.newArrayList();
+
+    static {
+        imagesEx.add("jpg");
+        imagesEx.add("gif");
+        imagesEx.add("jpeg");
+        imagesEx.add("png");
+        imagesEx.add("bmp");
+        imagesEx.add("webp");
+
+        imagesEx.add("jpg".toUpperCase());
+        imagesEx.add("gif".toUpperCase());
+        imagesEx.add("jpeg".toUpperCase());
+        imagesEx.add("png".toUpperCase());
+        imagesEx.add("bmp".toUpperCase());
+        imagesEx.add("webp".toUpperCase());
+    }
 
     @Autowired private ServletContext servletContext;
 
@@ -155,17 +178,40 @@ public class PageController {
         Collection<File> images =
                 FileUtils.listFiles(
                         new File(FilenameUtils.concat(location, "images")),
-                        "jpg",
-                        "jpeg",
-                        "gif",
-                        "png",
-                        "bmp",
-                        "webp");
+                        imagesEx.toArray(new String[0]));
         if (Util.valid(images)) {
             return ResponseEntity.ok(
                     images.stream()
+                            .sorted(
+                                    (f1, f2) -> {
+                                        try {
+                                            return Files.readAttributes(
+                                                            f2.toPath(), BasicFileAttributes.class)
+                                                    .lastModifiedTime()
+                                                    .compareTo(
+                                                            Files.readAttributes(
+                                                                            f1.toPath(),
+                                                                            BasicFileAttributes.class)
+                                                                    .lastModifiedTime()
+                                                    );
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                        return 0;
+                                    })
                             .map(file -> FilenameUtils.getName(file.getAbsolutePath()))
                             .collect(Collectors.toList()));
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    @RequestMapping(value = "/admin/upload/md/{imageName}", method = RequestMethod.DELETE)
+    public @ResponseBody ResponseEntity deleteImg(@PathVariable String imageName) throws IOException {
+        List<File> images = FileUtils.findFile(FilenameUtils.concat(location, "images"), imageName, imagesEx.toArray(new String[0]));
+        if (Util.valid(images)) {
+            for (File image : images) {
+                org.apache.commons.io.FileUtils.forceDelete(image);
+            }
         }
         return ResponseEntity.ok().build();
     }

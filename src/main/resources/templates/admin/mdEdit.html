@@ -28,11 +28,11 @@
             margin: 5px;
             border:1px solid #F0F0E8;
             background-color:#FFF;
-            padding:6px;
+            padding:3px;
         }
 
         .img:hover {
-            border:2px solid #a7abb1;
+            border:2px solid #edfa4d;
             text-decoration: none;
         }
 
@@ -68,9 +68,16 @@
             opacity: 1.0;
         }
 
+        .choosed {
+            border:1px solid #edfa4d;
+            background-color: #edfa4d;
+            text-decoration: none;
+        }
+
     </style>
 </head>
 <body>
+<input type="hidden" id="base" th:value="${#servletContext.getAttribute('httpServerHost')}">
 <div id="my-editormd" >
     <textarea id="my-editormd-markdown-doc" name="my-editormd-markdown-doc" style="display:none;"></textarea>
     <textarea id="my-editormd-html-code" name="my-editormd-html-code" style="display:none;"></textarea>
@@ -116,8 +123,10 @@
 
             codeFold: true,
 
+            mode             : "text/html",
+
             imageUpload : true,//开启本地图片上传
-            imageFormats : ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+            imageFormats : ["jpg", "jpeg", "gif", "png", "bmp", "webp","JPG", "JPEG", "GIF", "PNG", "BMP", "WEBP"],
             imageUploadURL : "/admin/upload/md/img",//图片上传地址
             toolbarIcons: [
                 "undo", "redo", "|",
@@ -133,7 +142,7 @@
             },
             toolbarHandlers: {
                 showImages : function(cm, icon, cursor, selection) {
-                    doShow();
+                    doShow(cm);
                 }
             },
 
@@ -154,7 +163,7 @@
 
     });
 
-    function doShow() {
+    function doShow(cm) {
         var images = {};
         $.get('/admin/upload/images', function(data){
             images = data;
@@ -167,12 +176,12 @@
                 }
                 curr.push(
                     `<div class="imgDiv">
-                        <img src="/data/images/` + images[i] + `" class="img">
+                        <img src="/data/images/` + images[i] + `" class="img" name="` +  images[i] + `">
                         <a href="javascript:void(0);" class="deleteHref">
                             <img src="/images/delete.png" class="deleteImg delete" />
                         </a>
-                        <a href="javascript:void(0);">
-                            <img src="/images/finish.png" class="choose" />
+                        <a href="javascript:void(0);" class="finish">
+                            <img src="/images/finish.png" class="choose" style="display: none" />
                         </a>
                     </div>`
                 );
@@ -181,11 +190,20 @@
                 type: 1
                 ,title: '图片浏览'
                 ,area: ['870px','720px']
-                ,btn: ['保存', '关闭']
+                ,btn: ['添加', '关闭']
                 ,btnAlign: 'r'
                 ,shade: 0.5
                 ,yes: function(index, layero){
-
+                    ilay.layer.close(index);
+                    var base = $("#base").val();
+                    var content = "";
+                    $(".choosed").each(function () {
+                        var url = $(this).attr("src");
+                        content += "![](" + ( base + url ) + ")\n";
+                    });
+                    if (content !== "") {
+                        cm.replaceSelection(content);
+                    }
                 }
                 ,success: function(layero, index){
                     ilay.flow.load({
@@ -197,10 +215,25 @@
                             var $deleteHref = $(".deleteHref");
                             $deleteHref.mouseenter(function () {
                                 $(this).find(".deleteImg").attr("class","deleteImg show");
-
                             });
                             $deleteHref.mouseleave(function () {
                                 $(this).find(".deleteImg").attr("class","deleteImg delete");
+                            });
+                            $deleteHref.click(function () {
+                                $(this).parent(".imgDiv").remove();
+                                $.ajax({
+                                    url: '/admin/upload/md/' + $(this).prev().attr("name"),
+                                    type: 'DELETE',
+                                });
+                            });
+                            $(".img").click(function () {
+                                if ($(this).hasClass("choosed")) {
+                                    $(this).removeClass("choosed");
+                                    $(this).next().next().find(".choose").hide();
+                                }else {
+                                    $(this).addClass("choosed");
+                                    $(this).next().next().find(".choose").show();
+                                }
                             });
                         }
                     });
