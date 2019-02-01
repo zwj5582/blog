@@ -176,6 +176,7 @@
             }
             ,cols: [
                 [
+                    {field: 'type',hide: true},
                     {field: 'id', title: 'ID', hide: true, templet: function(row){
                         return '<div id="row_' + row.id + '" >' + row.id + '</div>';
                     }}
@@ -289,7 +290,11 @@
             if(layEvent === 'upload'){
                 $("#rowCurrId").val(data.id);
                 $(this).next('button').trigger("click");
-            } else if(layEvent === 'del'){
+            }else if (layEvent === 'show') {
+                if (data.type === 'md') {
+                    window.open("/admin/page/md/edit/" + data.id);
+                }
+            }else if(layEvent === 'del'){
                 layer.confirm('真的删除行么', function(index){
                     obj.del();
                     layer.close(index);
@@ -398,16 +403,17 @@
                         ,contentType: false
                         ,processData: false
                         ,success: function (data) {
+                            console.log(data);
                             table.reload('table',{
                                 url: 'admin/page/list'
                                 ,where: vo
                             });
                             layer.close(index);
+                            if (type === 'md'){
+                                window.open("/admin/page/md/edit/" + data.id);
+                            }
                         }
                     });
-                    if (type === 'md'){
-                        window.open("/admin/page/md/edit/0");
-                    }
                 }
                 ,success: function(layero, index){
                     laydate.render({

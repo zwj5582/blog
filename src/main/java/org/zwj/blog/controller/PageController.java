@@ -125,12 +125,21 @@ public class PageController {
                     FileUtils.toRelativelyPathWithUnix(location, html.getAbsolutePath()));
             pageContentService.savePageContent(page);
         } else pageContentService.saveContent(page);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(
+                ImmutableMap.of("id",page.getId())
+        );
     }
 
     @RequestMapping(value = "/admin/page/md/edit/{id}")
-    public String mdEdit(@PathVariable(value = "id") Integer id) {
+    public String mdEdit(@PathVariable(value = "id") Integer id, Model model) {
+        model.addAttribute("page",pageContentService.findById(id));
         return "admin/mdEdit";
+    }
+
+    @RequestMapping(value = "/admin/save/md")
+    public @ResponseBody ResponseEntity saveMdContent(PageContent pageContent) {
+        pageContentService.saveMdContent(pageContent);
+        return ResponseEntity.ok().build();
     }
 
     @RequestMapping(value = "/admin/file/upload")

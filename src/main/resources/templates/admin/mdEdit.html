@@ -83,6 +83,10 @@
     <textarea id="my-editormd-html-code" name="my-editormd-html-code" style="display:none;"></textarea>
 </div>
 </body>
+<script th:inline="javascript">
+    var mdContent = [[${page.mdContent}]];
+    var pageId = [[${page.id}]];
+</script>
 <script type="text/javascript">
     var myEditor;
 
@@ -100,6 +104,7 @@
 
 
     $(function() {
+        $("#my-editormd-markdown-doc").text(mdContent);
         myEditor = editormd("my-editormd", {
             width   : "100%",
             height  : 800,
@@ -115,15 +120,13 @@
             flowChart: true,//开启流程图支持，默认关闭
             sequenceDiagram: true,//开启时序/序列图支持，默认关闭,
 
-            dialogLockScreen : false,//设置弹出层对话框不锁屏，全局通用，默认为true
-            dialogShowMask : false,//设置弹出层对话框显示透明遮罩层，全局通用，默认为true
-            dialogDraggable : false,//设置弹出层对话框不可拖动，全局通用，默认为true
+            dialogLockScreen : true,//设置弹出层对话框不锁屏，全局通用，默认为true
+            dialogShowMask : true,//设置弹出层对话框显示透明遮罩层，全局通用，默认为true
+            dialogDraggable : true,//设置弹出层对话框不可拖动，全局通用，默认为true
             dialogMaskOpacity : 0.4, //设置透明遮罩层的透明度，全局通用，默认值为0.1
             dialogMaskBgColor : "#000",//设置透明遮罩层的背景颜色，全局通用，默认为#fff
 
             codeFold: true,
-
-            mode             : "text/html",
 
             imageUpload : true,//开启本地图片上传
             imageFormats : ["jpg", "jpeg", "gif", "png", "bmp", "webp","JPG", "JPEG", "GIF", "PNG", "BMP", "WEBP"],
@@ -135,33 +138,57 @@
                 "list-ul", "list-ol", "hr", "|",
                 "link", "reference-link", "image", "showImages" ,"code", "preformatted-text", "code-block", "table", "datetime", "emoji", "html-entities", "pagebreak", "|",
                 "goto-line", "watch", "preview", "fullscreen", "clear", "search", "|",
-                "help", "info"
+                "help", "info", "edit"
             ],
             toolbarIconsClass: {
-                showImages: "fa-folder-open"
+                showImages: "fa-folder-open",
+                edit: "fa-edit"
             },
             toolbarHandlers: {
                 showImages : function(cm, icon, cursor, selection) {
                     doShow(cm);
+                },
+                edit: function (cm, icon, cursor, selection) {
+                    doEdit(cm,icon);
                 }
             },
-
-            /*
-             上传的后台只需要返回一个 JSON 数据，结构如下：
-             {
-                success : 0 | 1,           // 0 表示上传失败，1 表示上传成功
-                message : "提示的信息，上传成功或上传失败及错误信息等。",
-                url     : "图片地址"        // 上传成功时才返回
-             }
-             */
-
+            onload: function () {
+                this.cm.options.readOnly = true;
+            },
             /**设置主题颜色*/
-            /*editorTheme: 'sspai',
+            editorTheme: 'sspai',
             theme: 'sspai',
-            previewTheme: 'sspai'*/
+            previewTheme: 'sspai'
         });
 
     });
+    
+    function doEdit(cm,icon) {
+        if (icon.hasClass("fa-edit")) {
+            icon.attr("class","fa fa-save");
+            cm.options.readOnly = false;
+        }else {
+            cm.options.readOnly = true;
+            var layer = ilay.layer;
+            var index = layer.load();
+            $.ajax({
+                url: "/admin/save/md",
+                type: "post",
+                data: {
+                    id: pageId,
+                    mdContent: $("#my-editormd-markdown-doc").text()
+                },
+                success: function (data) {
+                    layer.close(index);
+                    layer.msg('保存成功', {
+                        icon: 1,
+                        time: 2000
+                    });
+                }
+            });
+            icon.attr("class","fa fa-edit");
+        }
+    }
 
     function doShow(cm) {
         var images = {};

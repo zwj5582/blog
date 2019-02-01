@@ -19,9 +19,9 @@ public class PageContentVO extends PageContent {
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @JsonFormat(pattern = "yyyy-MM-dd",timezone="GMT+8")
-    private Date begin = DateTime.now().dayOfMonth().withMinimumValue().toDate();
+    private Date begin = DateTime.now().dayOfMonth().withMinimumValue().millisOfDay().withMinimumValue().toDate();
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @JsonFormat(pattern = "yyyy-MM-dd",timezone="GMT+8")
-    private Date end = DateTime.now().dayOfMonth().withMaximumValue().toDate();
+    private Date end = DateTime.now().plusMonths(1).dayOfMonth().withMinimumValue().millisOfDay().withMinimumValue().toDate();
 
 }

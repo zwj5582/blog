@@ -35,7 +35,13 @@ public class PageContentService {
     }
 
     public PageContent findById(Integer id) {
-        return pageContentRepository.findById(id).orElse(new PageContent());
+        return pageContentRepository
+                .findById(id)
+                .map(pageContent -> {
+                    if (!Util.valid(pageContent.getMdContent())) pageContent.setMdContent("");
+                    return pageContent;
+                })
+                .orElse(new PageContent());
     }
 
     public void savePageContent(PageContent pageContent) throws IllegalAccessException {
@@ -45,7 +51,7 @@ public class PageContentService {
                 .orElse(new PageHistory())
                 .setCurr(false);
         PageHistory currPageHistory = new PageHistory();
-        BeanUtils.copyProperties(pageContent, currPageHistory,null,"createTime");
+        BeanUtils.copyProperties(pageContent, currPageHistory, null, "createTime");
         currPageHistory.setPageId(pageContent.getId());
         pageHistoryRepository.save(currPageHistory);
         pageContent.setHistoryId(currPageHistory.getVersion());
@@ -56,16 +62,18 @@ public class PageContentService {
     }
 
     public PageHistory updateWithFile(PageContent pageContent) throws Exception {
-        PageContent dbPageContent = pageContentRepository
-                .findById(pageContent.getId())
-                .orElseThrow(() -> new Exception("Can not find Entity ID;"));
-        BeanUtils.copyProperties(pageContent, dbPageContent, Util::valid, "id", "type", "file","versionNum");
+        PageContent dbPageContent =
+                pageContentRepository
+                        .findById(pageContent.getId())
+                        .orElseThrow(() -> new Exception("Can not find Entity ID;"));
+        BeanUtils.copyProperties(
+                pageContent, dbPageContent, Util::valid, "id", "type", "file", "versionNum");
         pageHistoryRepository
                 .findFirstByPageIdAndCurrIsTrue(dbPageContent.getId())
                 .orElse(new PageHistory())
                 .setCurr(false);
         PageHistory currPageHistory = new PageHistory();
-        BeanUtils.copyProperties(dbPageContent, currPageHistory,null,"createTime");
+        BeanUtils.copyProperties(dbPageContent, currPageHistory, null, "createTime");
         currPageHistory.setPageId(dbPageContent.getId());
         pageHistoryRepository.save(currPageHistory);
         final Long versionNum = pageHistoryRepository.countByPageId(dbPageContent.getId());
@@ -120,10 +128,11 @@ public class PageContentService {
                                         predicate
                                                 .getExpressions()
                                                 .add(
-                                                        (pageContentVO.getPublicity()) ?
-                                                                criteriaBuilder.isTrue(root.get("publicity")) :
-                                                                criteriaBuilder.isFalse(root.get("publicity"))
-                                                );
+                                                        (pageContentVO.getPublicity())
+                                                                ? criteriaBuilder.isTrue(
+                                                                        root.get("publicity"))
+                                                                : criteriaBuilder.isFalse(
+                                                                        root.get("publicity")));
                                     }
                                     return predicate;
                                 });
@@ -139,10 +148,22 @@ public class PageContentService {
                 pageContentRepository
                         .findById(pageContent.getId())
                         .orElseThrow(() -> new Exception("Can not find Entity ID;"));
-        BeanUtils.copyProperties(pageContent, content, Util::valid, new String[]{"publicity"}, new String[]{"id","versionNum"});
+        BeanUtils.copyProperties(
+                pageContent,
+                content,
+                Util::valid,
+                new String[] {"publicity"},
+                new String[] {"id", "versionNum"});
     }
 
     public PageHistory findByVersion(Integer version) {
         return pageHistoryRepository.findById(version).orElse(new PageHistory());
+    }
+
+    public void saveMdContent(PageContent pageContent) {
+        pageContentRepository
+                .findById(pageContent.getId())
+                .orElse(new PageContent())
+                .setMdContent(pageContent.getMdContent());
     }
 }
