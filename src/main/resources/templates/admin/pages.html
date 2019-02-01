@@ -21,13 +21,25 @@
 </body>
 <script src="/layui/layui.js"></script>
 <script type="text/html" id="barDemo">
+    <% if (state=='waiting_publish') { %>
+        <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="waiting_publish">发布</a>
+    <% } %>
+    <% else if (state=='waiting_update_publish') { %>
+        <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="waiting_update_publish">更新发布</a>
+    <% } %>
     <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="upload">上传</a>
     <button class="uploadBtn" style="display: none"></button>
     <input id="rowCurrId" type="hidden">
     <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="download">下载</a>
-    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
-    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="show">查看</a>
-    <a class="layui-btn layui-btn-warm layui-btn-xs" lay-event="version">版本</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">基础编辑</a>
+    <% if (type == 'md') { %>
+        <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="editContent">编辑内容</a>
+    <% } %>
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="showContent">查看最新内容</a>
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="showContent">查看发布内容</a>
+    <% if (state != 'waiting_publish') { %>
+        <a class="layui-btn layui-btn-warm layui-btn-xs" lay-event="version">版本</a>
+    <% } %>
 </script>
 <script type="text/html" id="toolbarDemo">
     <form class="form-inline">
@@ -112,13 +124,7 @@
                 <% if (!noFile) { %>
                 <div class="form-group">
                     <label class="col-sm-2 control-label">文件：</label>
-                    <div class="col-sm-10">
-                        <label class="radio-inline">
-                            <input type="radio" name="type" checked value="page"> 上传
-                        </label>
-                        <label class="radio-inline">
-                            <input type="radio" name="type" value="md"> Markdown
-                        </label>
+                    <div class="col-sm-5">
                         <button type="button" class="layui-btn" id="fileBtn">
                             <i class="layui-icon">&#xe67c;</i>上传文件
                         </button>
@@ -260,7 +266,7 @@
                                 return parseInt($("#rowCurrId").val());
                             }
                         }
-                        ,exts: 'zip|rar|html'
+                        ,exts: 'zip|rar|html|md|MD'
                         ,field: 'file'
                         ,number: 1
                         ,before: function(obj){
@@ -290,7 +296,7 @@
             if(layEvent === 'upload'){
                 $("#rowCurrId").val(data.id);
                 $(this).next('button').trigger("click");
-            }else if (layEvent === 'show') {
+            }else if (layEvent === 'editContent') {
                 if (data.type === 'md') {
                     window.open("/admin/page/md/edit/" + data.id);
                 }
@@ -394,8 +400,6 @@
                     if (typeof($("input[type='file']:first")[0].files[0]) !== "undefined"){
                         dataForm.append('file',$("input[type='file']:first")[0].files[0]);
                     }
-                    var type = $("input[name='type']:checked").val();
-                    dataForm.append('type',type);
                     $.ajax({
                         url: "/admin/page/doUpload"
                         ,type: "POST"
@@ -403,13 +407,12 @@
                         ,contentType: false
                         ,processData: false
                         ,success: function (data) {
-                            console.log(data);
                             table.reload('table',{
                                 url: 'admin/page/list'
                                 ,where: vo
                             });
                             layer.close(index);
-                            if (type === 'md'){
+                            if (data.type === 'md'){
                                 window.open("/admin/page/md/edit/" + data.id);
                             }
                         }
@@ -426,21 +429,12 @@
                     upload.render({
                         elem: '#fileBtn'
                         ,auto: false
-                        ,exts: 'zip|rar|html'
+                        ,exts: 'zip|rar|html|md|MD'
                         ,field: 'file'
                     });
                 }
                 ,content: template('pageDetail',data)
             });
-
-            $("input[type='radio'][name='type']").change(function () {
-                if (this.value === 'page') {
-                    $("#fileBtn").show();
-                }else {
-                    $("#fileBtn").hide();
-                }
-            });
-
         });
 
         function getFileExtension(filename) {

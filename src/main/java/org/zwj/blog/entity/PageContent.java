@@ -22,7 +22,7 @@ public class PageContent implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String type = "page";
+    private String type = "md";
 
     private String title;
 
@@ -48,5 +48,21 @@ public class PageContent implements Serializable {
     @Transient private MultipartFile file;
 
     private String mdContent;
+
+    private String htmlContent;
+
+    private String state;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone="GMT+8")
+    private Date lastUpdate;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone="GMT+8")
+    private Date lastPublish;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone="GMT+8")
+    private Date originalCreateTime = new Date();
 
 }

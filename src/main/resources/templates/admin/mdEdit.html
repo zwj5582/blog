@@ -127,6 +127,7 @@
             dialogMaskBgColor : "#000",//设置透明遮罩层的背景颜色，全局通用，默认为#fff
 
             codeFold: true,
+            htmlDecode : true,
 
             imageUpload : true,//开启本地图片上传
             imageFormats : ["jpg", "jpeg", "gif", "png", "bmp", "webp","JPG", "JPEG", "GIF", "PNG", "BMP", "WEBP"],
@@ -176,7 +177,8 @@
                 type: "post",
                 data: {
                     id: pageId,
-                    mdContent: $("#my-editormd-markdown-doc").text()
+                    mdContent: $("#my-editormd-markdown-doc").text(),
+                    htmlContent: $("#my-editormd-html-code").text()
                 },
                 success: function (data) {
                     layer.close(index);

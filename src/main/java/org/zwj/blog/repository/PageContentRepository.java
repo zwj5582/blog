@@ -10,8 +10,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.zwj.blog.entity.PageContent;
 
+import java.util.List;
+
 public interface PageContentRepository extends JpaRepository<PageContent, Integer>, JpaSpecificationExecutor<PageContent> {
 
-    Page<PageContent> findAllByPublicityIsTrue(Pageable pageable);
+    Page<PageContent> findAllByPublicityIsTrueAndStateNotIn(Pageable pageable, List<String> notInStates);
 
 }
