@@ -33,7 +33,7 @@ public class PagePortalController {
                     sort = {"createTime"})
                     Pageable pageable) {
         return ResponseEntitys.success(
-                pageContentService.findPageContentByPage(
+                pageContentService.findPagePortalContentByPage(
                         PageRequest.of(
                                 pageable.getPageNumber() - 1,
                                 pageable.getPageSize(),

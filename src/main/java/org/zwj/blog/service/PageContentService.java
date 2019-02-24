@@ -5,8 +5,10 @@
 package org.zwj.blog.service;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -18,10 +20,12 @@ import org.zwj.blog.repository.PageContentRepository;
 import org.zwj.blog.repository.PageHistoryRepository;
 import org.zwj.blog.repository.PagePortalContentRepository;
 import org.zwj.blog.utils.BeanUtils;
+import org.zwj.blog.utils.FileUtils;
 import org.zwj.blog.utils.Util;
 import org.zwj.blog.vo.PageContentVO;
 
 import javax.persistence.criteria.Predicate;
+import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +39,9 @@ public class PageContentService {
     @Autowired private PageHistoryRepository pageHistoryRepository;
 
     @Autowired private PagePortalContentRepository pagePortalContentRepository;
+
+    @Value("${html.content.location}")
+    private String location;
 
     public PageContent findPageContentById(Integer id) {
         return pageContentRepository
@@ -74,10 +81,16 @@ public class PageContentService {
                 pageContentRepository
                         .findById(pageContent.getId())
                         .orElseThrow(() -> new Exception("Can not find Entity ID;"));
+        if ("published".equals(dbPageContent.getState()))
+            dbPageContent.setState("waiting_update_publish");
+        if ("html".equals(dbPageContent.getType()) && Util.valid(dbPageContent.getHtmlLocation())) {
+            String htmlLocation = dbPageContent.getHtmlLocation();
+            final int index = htmlLocation.indexOf("/");
+            final String dirName = htmlLocation.substring(0, index);
+            org.apache.commons.io.FileUtils.forceMkdir(new File(location,dirName));
+        }
         BeanUtils.copyProperties(
-                pageContent, dbPageContent, Util::valid,new String[]{"mdContent","htmlContent"}, new String[]{"id", "type", "file", "versionNum","originalCreateTime"});
-        dbPageContent.setType("page");
-        dbPageContent.setLastUpdate(new Date());
+                pageContent, dbPageContent, Util::valid,new String[]{"mdContent","htmlContent"}, new String[]{"id", "file", "versionNum","originalCreateTime"});
     }
 
     public Page<PageContent> findByConditionAndPageable(
@@ -147,7 +160,7 @@ public class PageContentService {
                 pageable, Lists.newArrayList("waiting_publish","deleted"));
     }
 
-    private Page<PagePortalContent> findPagePortalContentByPage(Pageable pageable) {
+    public Page<PagePortalContent> findPagePortalContentByPage(Pageable pageable) {
         return pagePortalContentRepository.findAll(pageable);
     }
 
@@ -161,7 +174,7 @@ public class PageContentService {
                 content,
                 Util::valid,
                 new String[] {"publicity"},
-                new String[] {"id", "versionNum"});
+                new String[] {"id", "versionNum","type"});
     }
 
     public PageHistory findByVersion(Integer version) {

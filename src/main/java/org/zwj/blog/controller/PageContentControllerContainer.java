@@ -94,6 +94,7 @@ public class PageContentControllerContainer {
                 produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
         public ResponseEntity update(@RequestBody PageContent pageContent)
                 throws Exception {
+            pageContent.setLastUpdate(new Date());
             pageContentService.update(pageContent);
             return ResponseEntity.ok().build();
         }
@@ -115,29 +116,15 @@ public class PageContentControllerContainer {
                     pageContentVO);
         }
 
+        @RequestMapping(value = "/save/md")
+        public ResponseEntity saveMdContent(PageContent pageContent) {
+            pageContentService.saveMdContent(pageContent);
+            return ResponseEntity.ok().build();
+        }
+
         @RequestMapping(value = "/page/doUpload")
         public ResponseEntity upload(PageContent page) throws Exception {
-            if (Util.valid(page.getFile())) {
-                if ("md".equals(FilenameUtils.getExtension(page.getFile().getOriginalFilename()))) {
-                    page.setType("md");
-                    page.setMdContent(IOUtils.toString(page.getFile().getInputStream(), Charset.forName("UTF-8")));
-                }else {
-                    String uuid = Util.randomUUIDToString();
-                    String baseDir = FilenameUtils.concat(location, uuid);
-                    String originalFileAbsolutePath = FileUtils.saveFile(page.getFile(), baseDir, false);
-                    File editFile = FileUtils.findFileFirstOrLikeFirst(baseDir, "root.html", "html");
-                    final String extension = FilenameUtils.getExtension(editFile.getName()).toUpperCase();
-                    if (!"html".equals(extension)) {
-                        org.apache.commons.io.FileUtils.forceDelete(new File(baseDir));
-                        throw new Exception("Not Found HTML file!");
-                    }
-                    page.setType("html");
-                    page.setOriginalLocation(
-                            FileUtils.toRelativelyPathWithUnix(location, originalFileAbsolutePath));
-                    page.setHtmlLocation(
-                            FileUtils.toRelativelyPathWithUnix(location, editFile.getAbsolutePath()));
-                }
-            }
+            if (Util.valid(page.getFile())) doFileUpload(page);
             page.setState("waiting_publish");
             page.setOriginalCreateTime(new Date());
             page.setLastUpdate(new Date());
@@ -147,26 +134,35 @@ public class PageContentControllerContainer {
             );
         }
 
-        @RequestMapping(value = "/save/md")
-        public ResponseEntity saveMdContent(PageContent pageContent) {
-            pageContentService.saveMdContent(pageContent);
+        @RequestMapping(value = "/file/upload")
+        public ResponseEntity fileUpload(PageContent page) throws Exception {
+            if (!Util.valid(page.getFile())) throw new Exception("Not Found Files!");
+            doFileUpload(page);
+            page.setLastUpdate(new Date());
+            pageContentService.updateWithFile(page);
             return ResponseEntity.ok().build();
         }
 
-        @RequestMapping(value = "/file/upload")
-        public ResponseEntity fileUpload(PageContent page) throws Exception {
-            String uuid = Util.randomUUIDToString();
-            String baseDir = FilenameUtils.concat(location, uuid);
-            String originalFileAbsolutePath = FileUtils.saveFile(page.getFile(), baseDir, false);
-            page.setOriginalLocation(
-                    FileUtils.toRelativelyPathWithUnix(location, originalFileAbsolutePath));
-            File showFile = FileUtils.findFileFirstOrLikeFirst(baseDir, "root.html", "html","md","MD");
-            if (!(FilenameUtils.getExtension(showFile.getName()).equalsIgnoreCase("html"))){
-                page.setMdContent(org.apache.commons.io.FileUtils.readFileToString(showFile, Charset.forName("UTF-8")));
+        private void doFileUpload(PageContent page) throws Exception{
+            if ("md".equals(FilenameUtils.getExtension(page.getFile().getOriginalFilename()))) {
+                page.setType("md");
+                page.setMdContent(IOUtils.toString(page.getFile().getInputStream(), Charset.forName("UTF-8")));
+            }else {
+                String uuid = Util.randomUUIDToString();
+                String baseDir = FilenameUtils.concat(location, uuid);
+                String originalFileAbsolutePath = FileUtils.saveFile(page.getFile(), baseDir, false);
+                File editFile = FileUtils.findFileFirstOrLikeFirst(baseDir, "root.html", "html");
+                final String extension = FilenameUtils.getExtension(editFile.getName()).toUpperCase();
+                if (!"html".equals(extension)) {
+                    org.apache.commons.io.FileUtils.forceDelete(new File(baseDir));
+                    throw new Exception("Not Found HTML file!");
+                }
+                page.setType("html");
+                page.setOriginalLocation(
+                        FileUtils.toRelativelyPathWithUnix(location, originalFileAbsolutePath));
+                page.setHtmlLocation(
+                        FileUtils.toRelativelyPathWithUnix(location, editFile.getAbsolutePath()));
             }
-            page.setHtmlLocation(FileUtils.toRelativelyPathWithUnix(location, showFile.getAbsolutePath()));
-            pageContentService.updateWithFile(page);
-            return ResponseEntity.ok(ImmutableMap.of("version", 0));
         }
 
         @RequestMapping(value = "/upload/md/img")
